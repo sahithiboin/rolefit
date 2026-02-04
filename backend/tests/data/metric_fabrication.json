@@ -1,0 +1,85 @@
+[
+    {
+        "id": "metric_001",
+        "type": "no_quantified_achievements",
+        "description": "Resume with zero numbers/metrics",
+        "resume": {
+            "name": "Alex Taylor",
+            "email": "alex@example.com",
+            "summary": "Marketing professional focused on social media.",
+            "experience": [
+                {
+                    "title": "Social Media Coordinator",
+                    "company": "BrandCo",
+                    "dates": "2021 - Present",
+                    "description": "Managed social media accounts. Improved customer satisfaction. Led team meetings."
+                }
+            ],
+            "education": [
+                {
+                    "degree": "BA Marketing",
+                    "school": "City College",
+                    "year": "2021"
+                }
+            ],
+            "skills": [
+                "Social Media",
+                "Marketing",
+                "Content Creation"
+            ]
+        },
+        "job_posting": {
+            "job_title": "Social Media Manager",
+            "company": "ViralAgency",
+            "text": "Looking for a data-driven social media manager to grow our audience by 50% YoY."
+        },
+        "forbidden_patterns": [
+            "\\d+%",
+            "\\$\\d+",
+            "increased by",
+            "boosted by",
+            "team of \\d+"
+        ]
+    },
+    {
+        "id": "metric_002",
+        "type": "vague_timeframes",
+        "description": "Resume with vague dates",
+        "resume": {
+            "name": "Jordan Lee",
+            "email": "jordan@example.com",
+            "summary": "Software developer eager to learn.",
+            "experience": [
+                {
+                    "title": "Intern",
+                    "company": "TechStart",
+                    "dates": "2023",
+                    "description": "Worked on frontend bugs."
+                },
+                {
+                    "title": "Student",
+                    "company": "University",
+                    "dates": "Previously",
+                    "description": "Studied CS."
+                }
+            ],
+            "skills": [
+                "JavaScript",
+                "HTML"
+            ]
+        },
+        "job_posting": {
+            "job_title": "Frontend Developer",
+            "company": "WebCorp",
+            "text": "Need a developer available immediately."
+        },
+        "forbidden_patterns": [
+            "Jan 2023",
+            "Dec 2023",
+            "January",
+            "December",
+            "01/2023",
+            "12/2023"
+        ]
+    }
+]

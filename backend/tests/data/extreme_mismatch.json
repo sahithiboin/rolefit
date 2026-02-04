@@ -1,0 +1,96 @@
+[
+    {
+        "id": "mismatch_001",
+        "type": "extreme_skill_gap",
+        "description": "Retail Associate applying for Lead DevOps Architect",
+        "resume": {
+            "name": "Jane Doe",
+            "email": "jane@example.com",
+            "phone": "555-0101",
+            "summary": "Dependable Retail Associate with 2 years of experience in customer service and point-of-sale operations.",
+            "experience": [
+                {
+                    "title": "Retail Associate",
+                    "company": "SuperMart",
+                    "dates": "2022 - 2024",
+                    "description": "Assisted customers with product selection. Processed transactions accurately using POS system. Maintained clean and organized store shelves."
+                }
+            ],
+            "education": [
+                {
+                    "degree": "High School Diploma",
+                    "school": "Springfield High",
+                    "year": "2022"
+                }
+            ],
+            "skills": [
+                "Customer Service",
+                "Cash Handling",
+                "Stocking",
+                "Time Management"
+            ]
+        },
+        "job_posting": {
+            "job_title": "Lead DevOps Architect",
+            "company": "CloudScale Inc.",
+            "text": "We are seeking a Lead DevOps Architect to manage our cloud infrastructure. Requirements: 8+ years of experience. Expert in Kubernetes, Docker, CI/CD pipelines (Jenkins/GitLab), AWS (EC2, S3, RDS), and Terraform. Must have led teams of 5+ engineers."
+        },
+        "forbidden_facts": [
+            "Kubernetes",
+            "Docker",
+            "AWS",
+            "Terraform",
+            "CI/CD",
+            "DevOps",
+            "Architect",
+            "Manager",
+            "Lead"
+        ]
+    },
+    {
+        "id": "mismatch_002",
+        "type": "industry_quantum_leap",
+        "description": "Elementary School Teacher applying for Senior Quant Analyst",
+        "resume": {
+            "name": "John Smith",
+            "email": "john@example.com",
+            "phone": "555-0102",
+            "summary": "Dedicated Elementary School Teacher with 10 years of experience in early childhood education.",
+            "experience": [
+                {
+                    "title": "Elementary Teacher",
+                    "company": "Unified School District",
+                    "dates": "2014 - 2024",
+                    "description": "Planned and delivered lessons for 3rd grade students. Managed classroom dynamics. Communicated student progress to parents."
+                }
+            ],
+            "education": [
+                {
+                    "degree": "Master of Education",
+                    "school": "State University",
+                    "year": "2014"
+                }
+            ],
+            "skills": [
+                "Classroom Management",
+                "Lesson Planning",
+                "Communication",
+                "Child Development"
+            ]
+        },
+        "job_posting": {
+            "job_title": "Senior Quantitative Analyst",
+            "company": "HedgeFund X",
+            "text": "Requires PhD in Mathematics or Physics. Expert in Python for ML, stochastic calculus, derivatives pricing, and high-frequency trading algorithms."
+        },
+        "forbidden_facts": [
+            "Python",
+            "Machine Learning",
+            "Quant",
+            "Derivative",
+            "Trading",
+            "PhD",
+            "Stochastic Calculus"
+        ]
+    }
+]
