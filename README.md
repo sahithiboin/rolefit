@@ -106,6 +106,15 @@ docker run -p 8000:8000 rolefit
 
 ---
 
+## 🛠️ Architecture & Tech Stack
+
+-   **AI Foundation**: Uses Gemini 3 Flash for multi-modal parsing and document synthesis.
+-   **Backend**: High-performance API built with **FastAPI** and **Python 3.13**.
+-   **Frontend**: Modern, responsive UI built with **React**, **Vite**, and **TailwindCSS**.
+-   **Deployment**: Production-ready with **Docker** and automated deployment scripts.
+
+---
+
 ## 🧩 Troubleshooting
 
 ### Frontend shows a blank screen
