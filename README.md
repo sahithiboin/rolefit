@@ -1,14 +1,14 @@
 # RoleFit: AI-Powered Career Strategist 🚀
 
 ![Gemini 3 Hackathon](https://img.shields.io/badge/Status-Hackathon%20Ready-success)
-![Built with Gemini](https://img.shields.io/badge/AI-Gemini%202.0%20Flash-blue)
+![Built with Gemini](https://img.shields.io/badge/AI-Gemini%203%20Flash-blue)
 ![Frontend](https://img.shields.io/badge/Frontend-React%20%2F%20Vite-61dafb)
 ![Backend](https://img.shields.io/badge/Backend-FastAPI%20%2F%20Python-009688)
 
 ## 🌐 Live Demo
 **[Launch RoleFit &rarr;](https://rolefit-backend-946716696276.us-central1.run.app/)**
 
-RoleFit is a next-generation career assistant designed (and optimized) to bridge the gap between candidate potential and job requirements. By leveraging the advanced reasoning of **Google Gemini 2.0 Flash**, RoleFit analyzes resumes and job descriptions to generate highly tailored, ATS-optimized application packages.
+RoleFit is a next-generation career assistant designed (and optimized) to bridge the gap between candidate potential and job requirements. By leveraging the advanced reasoning of **Google Gemini 3 Flash**, RoleFit analyzes resumes and job descriptions to generate highly tailored, ATS-optimized application packages.
 
 > **Most AI resume tools hallucinate achievements. RoleFit refuses to.**
 
@@ -38,7 +38,7 @@ npm run dev
 ## 🧠 How RoleFit Works
 
 1. **Upload & Paste**: Provide your current resume and the target job description.
-2. **Deep Alignment**: RoleFit analyzes semantic alignment and identifies gaps using Gemini 2.0 Flash.
+2. **Deep Alignment**: RoleFit analyzes semantic alignment and identifies gaps using Gemini 3 Flash.
 3. **Professional Output**: Receive a custom resume, cover letter, and fit analysis instantly.
 
 ---
