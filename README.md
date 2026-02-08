@@ -5,6 +5,9 @@
 ![Frontend](https://img.shields.io/badge/Frontend-React%20%2F%20Vite-61dafb)
 ![Backend](https://img.shields.io/badge/Backend-FastAPI%20%2F%20Python-009688)
 
+## 🌐 Live Demo
+**[Launch RoleFit &rarr;](https://rolefit-backend-946716696276.us-central1.run.app/)**
+
 RoleFit is a next-generation career assistant designed (and optimized) to bridge the gap between candidate potential and job requirements. By leveraging the advanced reasoning of **Google Gemini 2.0 Flash**, RoleFit analyzes resumes and job descriptions to generate highly tailored, ATS-optimized application packages.
 
 > **Most AI resume tools hallucinate achievements. RoleFit refuses to.**
