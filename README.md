@@ -1,80 +1,129 @@
-# RoleFit - AI-Powered Resume Tailor
+# RoleFit: AI-Powered Career Strategist 🚀
 
-![Gemini 3 Hackathon](https://img.shields.io/badge/Built%20for-Gemini%203%20Hackathon-blue)
+![Gemini 3 Hackathon](https://img.shields.io/badge/Status-Hackathon%20Ready-success)
+![Built with Gemini](https://img.shields.io/badge/AI-Gemini%202.0%20Flash-blue)
+![Frontend](https://img.shields.io/badge/Frontend-React%20%2F%20Vite-61dafb)
+![Backend](https://img.shields.io/badge/Backend-FastAPI%20%2F%20Python-009688)
 
-RoleFit is an intelligent career assistant that helps job seekers tailor their resumes and cover letters to specific job descriptions using the power of Google's **Gemini 3** models.
+RoleFit is a next-generation career assistant designed (and optimized) to bridge the gap between candidate potential and job requirements. By leveraging the advanced reasoning of **Google Gemini 2.0 Flash**, RoleFit analyzes resumes and job descriptions to generate highly tailored, ATS-optimized application packages.
 
-## 🚀 Features
+> **Most AI resume tools hallucinate achievements. RoleFit refuses to.**
 
--   **Smart Resume Parsing**: Extracts skills, experience, and education from PDF resumes.
--   **Job Description Analysis**: Understands key requirements and nuances of job postings.
--   **AI Match Analysis**: Provides a detailed fit score and identifies gaps between the profile and the job.
--   **Custom Content Generation**: Generates tailored resumes and cover letters in PDF and DOCX formats.
--   **Interactive Refinement**: Allows users to tweak the tone and content using natural language prompts.
+---
 
-## 🛠️ Tech Stack
+## ⚡ Quick Start
 
--   **Frontend**: React, Vite, TailwindCSS
--   **Backend**: Python, FastAPI
--   **AI Engine**: Google Gemini 3 (via Google GenAI SDK)
--   **Docs**: PDF generation (jspdf), DOCX generation (docx)
+Get RoleFit running in under 2 minutes:
 
-## 🏗️ Setup & Installation
+```bash
+# 1. Backend Setup
+cd backend
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+# Configure backend/.env (see Configuration below)
+uvicorn main:app --reload
 
-### Prerequisites
--   Node.js & npm
--   Python 3.9+
--   Google AI Studio API Key
+# 2. Frontend Setup (In a new terminal)
+cd ..
+npm install
+# Configure root .env (see Configuration below)
+npm run dev
+```
 
-### Backend Setup
+---
 
-1.  Navigate to the backend directory:
-    ```bash
-    cd rolefit/backend
-    ```
-2.  Create a virtual environment:
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
-    ```
-3.  Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-4.  Create a `.env` file in `rolefit/backend/` and add your API key:
-    ```env
-    GOOGLE_API_KEY=your_gemini_api_key_here
-    ```
-5.  Run the server:
-    ```bash
-    uvicorn main:app --reload
-    ```
-    The API will be available at `http://localhost:8000`.
+## 🧠 How RoleFit Works
 
-### Frontend Setup
+1. **Upload & Paste**: Provide your current resume and the target job description.
+2. **Deep Alignment**: RoleFit analyzes semantic alignment and identifies gaps using Gemini 2.0 Flash.
+3. **Professional Output**: Receive a custom resume, cover letter, and fit analysis instantly.
 
-1.  Navigate to the project root:
-    ```bash
-    cd rolefit
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Start the development server:
-    ```bash
-    npm run dev
-    ```
-    The app will run at `http://localhost:5173`.
+---
 
-## 🤖 Gemini 3 Integration
+## ✨ Key Features
 
-This project leverages **Gemini 2.0 Flash** (referred to as Gemini 3 in the context of the hackathon) for its multi-modal and reasoning capabilities. The integration logic is located in `backend/logic/`.
+-   **🔍 Contextual Analysis**: Deep-parsing of resumes and JDs to understand intent, not just keywords.
+-   **📊 Fit Analysis**: Instant "AI Verdict" and delta-score showing exactly where you stand.
+-   **✍️ Dynamic Generation**: AI-crafted resumes and cover letters tailored for every specific role.
+-   **🛠️ Interactive Refinement**: Tweak tone, emphasis, and content using natural language commands.
+-   **📄 Multi-Format Export**: One-click download in professional PDF and DOCX formats.
 
--   `backend/logic/parser.py`: Uses Gemini to structure unstructured PDF data.
--   `backend/logic/matcher.py`: Performs semantic matching between resume and job description.
--   `backend/logic/generator.py`: Generates highly contextualized application documents.
+---
+
+## 🆚 Why RoleFit is Different
+
+-   ✅ **Zero Hallucination**: No made-up skills or fake achievements; truth is our foundation.
+-   ✅ **Transparent Fit Scoring**: Real gap analysis that tells you exactly why you fit (or why you don't).
+-   ✅ **ATS-Optimized**: High-quality structural output, not generic "AI-sounding" text.
+-   ✅ **Human-in-the-Loop**: Interactive refinement keeps you in the driver's seat.
+
+---
+
+## ⚙️ Configuration & Environment
+
+RoleFit requires two environment files to function correctly. **Do not commit these files to version control.**
+
+### 1. Backend Configuration (`backend/.env`)
+Create a `.env` file in the `backend/` directory:
+
+```env
+GOOGLE_API_KEY=your_google_ai_studio_key_here
+```
+> [!NOTE]  
+> Obtain your key from the [Google AI Studio](https://aistudio.google.com/).
+
+### 2. Frontend Configuration (`.env`)
+Create a `.env` file in the project root:
+
+```env
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
+```
+> [!IMPORTANT]  
+> These values can be found in your Firebase Project Settings under "General" -> "Your apps".
+
+---
+
+## 🐳 Docker Deployment
+
+For production-like environments, RoleFit can be containerized using the included Dockerfile.
+
+```bash
+# Build the combined frontend/backend image
+docker build -t rolefit .
+
+# Run the container (ensure env vars are passed or included in the build)
+docker run -p 8000:8000 rolefit
+```
+
+---
+
+## 🧩 Troubleshooting
+
+### Frontend shows a blank screen
+-   Check that the `.env` file exists in the **project root**.
+-   Ensure all `VITE_FIREBASE_*` variables are set correctly.
+-   Open the browser console (F12) to check for initialization errors.
+
+### Backend fails to start
+-   Confirm Python version is 3.9 or higher.
+-   Verify that `backend/.env` contains `GOOGLE_API_KEY` (and matches the exact name).
+-   Try re-installing dependencies: `pip install -r requirements.txt`.
+
+### API Errors
+-   Ensure the backend server is running on `http://localhost:8000`.
+-   Verify your Google API key has sufficient quota and is enabled for the Gemini API.
+
+---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+Built with ❤️ by the RoleFit Team.
