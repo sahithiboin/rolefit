@@ -47,6 +47,9 @@ const Carousel = () => {
                         width: 90% !important;
                         max-width: 400px !important;
                     }
+                    .carousel-card.duplicate {
+                        display: none !important;
+                    }
                 }
             `}</style>
             <motion.div
@@ -64,8 +67,7 @@ const Carousel = () => {
                 {[...features, ...features].map((feature, index) => (
                     <motion.div
                         key={index}
-                        className="card carousel-card"
-                        whileHover={{ scale: 1.05, y: -10 }}
+                        className={`card carousel-card ${index >= features.length ? 'duplicate' : ''}`}
                         style={{
                             width: '320px',
                             flexShrink: 0,
@@ -75,7 +77,8 @@ const Carousel = () => {
                             border: '1px solid var(--border-light)',
                             display: 'flex',
                             flexDirection: 'column',
-                            boxShadow: '0 4px 20px rgba(0,0,0,0.05)'
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+                            cursor: 'default'
                         }}
                     >
                         <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px', height: '100%' }}>

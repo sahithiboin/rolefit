@@ -105,6 +105,10 @@ export const transformProfileForBackend = (formData) => {
         return acc + 1;
     }, 0);
 
+    const extraPhone = formData.linkedin?.phone ? `\nPhone: ${formData.linkedin.phone}` : '';
+    const extraPortfolio = formData.linkedin?.portfolio ? `\nPortfolio/Website: ${formData.linkedin.portfolio}` : '';
+    const combinedAdditional = (formData.additional || '') + extraPhone + extraPortfolio;
+
     return {
         full_name: formData.linkedin.fullName,
         email: formData.linkedin.email,
@@ -116,7 +120,8 @@ export const transformProfileForBackend = (formData) => {
         projects: formData.projects,
         awards: formData.awards,
         languages: formData.languages,
-        additional_info: formData.additional,
+        additional_info: combinedAdditional.trim(),
         total_years_experience: totalYears
     };
 };
+

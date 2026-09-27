@@ -1,0 +1,56 @@
+2026-03-14 11:25:02 [info     ] Validation Complete - Weighted Scoring Applied final_score=8.6 hallucinations_detected=True
+2026-03-14 11:25:02 [error    ] Validator Error: 'safe_cover_letter'
+{
+  "match_analysis": {
+    "overall_fit_score": 8.5,
+    "summary_title": "Python & Cloud Engineer Alignment",
+    "summary_text": "Experienced Software Engineer with 5 years of expertise in building scalable systems using Python and React. Proven success in cloud architecture, AWS infrastructure, and full-stack development to solve complex customer challenges.",
+    "strengths": [
+      {
+        "description": "Core Language Alignment",
+        "evidence": "5 years of commercial Python experience matches JD requirements."
+      },
+      {
+        "description": "Cloud Competency",
+        "evidence": "Direct experience in AWS cloud deployments."
+      }
+    ],
+    "gaps": [
+      {
+        "description": "Advanced Distributed Systems",
+        "severity": "Low"
+      },
+      {
+        "description": "Large Scale System Design",
+        "severity": "Medium"
+      }
+    ],
+    "differentiators": [
+      {
+        "description": "Full-Stack Proficiency",
+        "evidence": "Ability to integrate frontend React interfaces with robust Python backends."
+      }
+    ]
+  },
+  "verdict": {
+    "label": "Strong Candidate",
+    "message": "High-potential candidate with strong core skills. Focus on highlighting cloud-specific accomplishments to bridge the seniority gap."
+  },
+  "job_data": {
+    "job_title": "Senior Software Engineer",
+    "company": "Tier-1 Tech Company"
+  },
+  "results": {
+    "resume": "## **John Doe**\n555-010-9999 | j.doe@email.com | linkedin.com/in/johndoe | San Francisco, CA\n\n## **PROFESSIONAL SUMMARY**\n**Software Engineer** with 5 years of experience building scalable applications using **Python** and **React**. Proven capability in designing **AWS** cloud architecture and optimizing backend performance. Committed to delivering high-quality, high-availability software solutions.\n\n## **CORE COMPETENCIES**\n**Python** | **React** | **AWS** | **Git** | **SQL** | **CI/CD** | **RESTful APIs** | **Microservices** | **Cloud Computing** | **Data Structures** | **Agile Development** | **System Architecture**\n\n## **PROFESSIONAL EXPERIENCE**\n**Tech Solutions Corp** | **Software Engineer** | 2019 - Present | San Francisco, CA\n\u2022 Built scalable backend services using **Python** by refactoring database queries to improve API performance.\n\u2022 Migrated legacy services to **AWS** infrastructure to enhance system scalability.\n\u2022 Developed frontend features with **React** to modernize user interface components.\n\u2022 Implemented and optimized CI/CD pipelines to streamline deployment processes.\n\n## **EDUCATION**\nBS Computer Science | State University | 2019 | San Francisco, CA\n\n## **CERTIFICATIONS**\n[INFO REQUIRED: Candidate lacks evidence for AWS Certification]\n\n## **TECHNICAL PROFICIENCIES**\nLanguages: **Python** | Cloud: **AWS** | Frameworks: **React** | Tools: **Git**",
+    "cover_letter": "Dear Hiring Manager,\n\nI am writing to express my interest in the Senior Software Engineer position at your company. With 5 years of experience engineering high-performance systems using **Python** and **AWS**, I have built a solid foundation in delivering scalable solutions that prioritize user impact and system reliability.\n\nThroughout my career, I have optimized backend performance and migrated mission-critical applications to **AWS** environments. My ability to integrate **React** frontends with robust **Python** backends allows me to contribute across the stack while maintaining a sharp focus on performance optimization and clean, maintainable code.\n\nI am eager to bring my problem-solving skills to your team and contribute to your culture of **Customer Obsession**. Thank you for your time and consideration. I look forward to the possibility of discussing how my experience aligns with your current engineering goals.",
+    "linkedin_message": "Hi [Hiring Manager Name], I am a software engineer with 5 years of experience in Python and AWS. I\u2019ve been following [Company Name]'s work in scalable cloud infrastructure and would love to bring my expertise in Python and React to your engineering team. Would you be open to a brief chat?"
+  },
+  "recommendations": [
+    {
+      "title": "AWS System Design",
+      "reason": "Expanding knowledge of cloud architecture will help bridge the gap to Senior level requirements.",
+      "youtube_query": "AWS System Design for Senior Engineers"
+    }
+  ],
+  "resume_pro_tip": "Focus on metrics: always quantify your impact (e.g., 'increased performance by X%') to ensure you hit the 90+ score on scanners."
+}

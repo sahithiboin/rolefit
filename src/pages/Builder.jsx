@@ -5,12 +5,14 @@ import { Card } from '../components/Card';
 import { Input, Textarea } from '../components/Input';
 import { api, transformProfileForBackend } from '../lib/api';
 import { useAuth } from '../components/AuthContext';
-import { LogOut, User, Cloud, CloudOff, Loader2, HelpCircle, CheckCircle } from 'lucide-react';
+import { LogOut, User, Cloud, CloudOff, Loader2, HelpCircle, CheckCircle, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import OnboardingModal from '../components/OnboardingModal';
 import ThemeToggle from '../components/ThemeToggle';
+import { tracker } from '../lib/tracker';
+import { analytics } from '../lib/analytics';
 
 const SECTIONS = [
     { id: 'linkedin', label: 'Basic Info' },
@@ -57,7 +59,11 @@ export default function Builder() {
 
 
     const [saveStatus, setSaveStatus] = useState('idle'); // idle, saving, saved, error
+    const [loadedUid, setLoadedUid] = useState(null);
     const [showOnboarding, setShowOnboarding] = useState(false);
+    const [showJobModal, setShowJobModal] = useState(false);
+    const [tempJobDescription, setTempJobDescription] = useState('');
+
 
     // Load data from Firestore or LocalStorage on mount
     useEffect(() => {
@@ -87,7 +93,9 @@ export default function Builder() {
             }
         };
 
-        loadInitialData();
+        loadInitialData().finally(() => {
+            setLoadedUid(currentUser?.uid || 'anonymous');
+        });
 
         // Add fadeIn animation style
         if (!document.getElementById('fade-style')) {
@@ -105,6 +113,8 @@ export default function Builder() {
 
     // Save data to LocalStorage and Firestore (debounced)
     useEffect(() => {
+        if (!loadedUid || (currentUser && loadedUid !== currentUser.uid)) return;
+        
         localStorage.setItem('rolefit_profile_data', JSON.stringify(formData));
 
         if (currentUser) {
@@ -127,8 +137,26 @@ export default function Builder() {
         }
     }, [formData, currentUser]);
 
+    // Track manual edits (Structural Accuracy)
+    const handleFieldChange = (section, field, value) => {
+        if (hasParsedResume) {
+            analytics.trackEvent('manual_edit_after_parse', { section, field });
+        }
+        
+        if (section === 'linkedin' || section === 'skills' || section === 'additional') {
+            setFormData(prev => ({
+                ...prev,
+                [section]: section === 'linkedin' ? { ...prev.linkedin, [field]: value } : value
+            }));
+        } else {
+            // For array sections, this would be handled in their respective child components
+            // but for tracking purposes, we add the logic here or in sub-handlers
+        }
+    };
+
     const [isGenerating, setIsGenerating] = useState(false);
     const [isParsing, setIsParsing] = useState(false);
+    const [hasParsedResume, setHasParsedResume] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [showParsingNotice, setShowParsingNotice] = useState(false);
     const [loadingProgress, setLoadingProgress] = useState(0);
@@ -207,8 +235,11 @@ export default function Builder() {
                 }));
 
                 setShowParsingNotice(true);
+                setHasParsedResume(true);
+                analytics.trackEvent('resume_parsed', { filename: file.name });
             } catch (error) {
                 console.error("Parsing failed:", error);
+                analytics.trackError(`Resume parsing failed: ${error.message}`);
                 const errorMessage = error.message || "Unknown error";
                 alert(`Sorry, we couldn't parse this resume automatically.\n\nDetails: ${errorMessage}\n\nPlease try another file or enter details manually.`);
             } finally {
@@ -236,18 +267,42 @@ export default function Builder() {
 
     const progress = calculateProgress();
 
-    const handleGenerate = async () => {
-        setIsGenerating(true);
-        try {
-            const jobDescription = localStorage.getItem('rolefit_job_description');
-            if (!jobDescription) {
-                alert("No job description found. Please start over.");
-                navigate('/');
+    const handleGenerateClick = () => {
+        if (progress.percent < 20) {
+            if (!window.confirm("Your profile looks a bit empty. We recommend adding more details for better results. Proceed anyway?")) {
                 return;
             }
+        }
+        const existingJd = localStorage.getItem('rolefit_job_description') || '';
+        setTempJobDescription(existingJd);
+        setShowJobModal(true);
+    };
+
+    const handleConfirmGenerate = async () => {
+        if (!tempJobDescription || tempJobDescription.length < 200) {
+            alert("Please paste a valid job description (at least 200 characters).");
+            return;
+        }
+        localStorage.setItem('rolefit_job_description', tempJobDescription);
+        setShowJobModal(false);
+        setIsGenerating(true);
+        try {
+            const jobDescription = tempJobDescription;
+
+            // Start TTV Timer
+            analytics.startTimer('generation_to_results');
 
             const backendProfile = transformProfileForBackend(formData);
+            analytics.trackEvent('generation_started', {
+                has_experience: formData.experience.length > 0,
+                has_projects: formData.projects.length > 0,
+                completion_percent: progress.percent
+            });
             const data = await api.completeApplication(backendProfile, jobDescription);
+
+            // Transition: No longer silent tracking. 
+            // We pass a flag to Results.jsx to trigger the confirmation modal.
+            const shouldPromptTracking = !!currentUser && !!data.job_data;
 
             navigate('/results', {
                 state: {
@@ -257,7 +312,8 @@ export default function Builder() {
                     verdict: data.verdict,
                     recommendations: data.recommendations,
                     resumeProTip: data.resume_pro_tip,
-                    formData: formData
+                    formData: formData,
+                    shouldPromptTracking
                 }
             });
 
@@ -282,6 +338,80 @@ export default function Builder() {
     return (
         <div className="mobile-stack" style={{ display: 'flex', minHeight: '100vh', background: 'var(--background)', color: 'var(--text-primary)', transition: 'all 0.3s ease' }}>
             <OnboardingModal isOpen={showOnboarding} onClose={handleCloseOnboarding} />
+
+            {/* Mobile Top Header (hidden on desktop) */}
+            <div className="mobile-only" style={{ width: '100%', zIndex: 30, background: 'var(--surface)', borderBottom: '1px solid var(--border-light)' }}>
+                <div style={{ padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => navigate('/')}>
+                        <div style={{ width: '28px', height: '28px', background: 'linear-gradient(135deg, var(--primary-light), var(--primary))', borderRadius: '6px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '14px' }}>R</div>
+                        <span style={{ fontWeight: 700, fontSize: '16px' }}>RoleFit</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <button
+                            onClick={() => setShowOnboarding(true)}
+                            title="Watch Tour Again"
+                            style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                            <HelpCircle size={18} />
+                        </button>
+                        <ThemeToggle inline={true} style={{ background: 'none', border: 'none', boxShadow: 'none', width: '34px', height: '34px' }} />
+                        {currentUser && (
+                            <button onClick={logout} style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', background: 'none', border: 'none', padding: '8px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                                <LogOut size={14} /> Sign Out
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Job Description Modal */}
+            <AnimatePresence>
+                {showJobModal && (
+                    <div style={{
+                        position: 'fixed', inset: 0, zIndex: 10000,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '20px', background: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(5px)'
+                    }}>
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            style={{
+                                background: 'var(--surface)', width: '100%', maxWidth: '600px',
+                                borderRadius: '24px', padding: '32px',
+                                boxShadow: '0 20px 50px -12px rgba(0, 0, 0, 0.25)'
+                            }}
+                        >
+                            <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '16px' }}>Ready to Apply?</h2>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
+                                Paste the job description below and our AI will tailor your profile specifically for this role.
+                            </p>
+                            
+                            <Textarea
+                                placeholder="Paste the complete job posting here (min 200 characters)..."
+                                style={{ minHeight: '250px', marginBottom: '8px' }}
+                                value={tempJobDescription}
+                                onChange={(e) => setTempJobDescription(e.target.value)}
+                            />
+                            <div style={{ textAlign: 'right', fontSize: '12px', color: 'var(--text-tertiary)', marginBottom: '24px' }}>
+                                {tempJobDescription.length} characters
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end' }}>
+                                <Button variant="ghost" onClick={() => setShowJobModal(false)}>Cancel</Button>
+                                <Button 
+                                    variant="primary" 
+                                    onClick={handleConfirmGenerate}
+                                    disabled={tempJobDescription.length < 200}
+                                    style={{ height: 'auto', minHeight: '44px', padding: '10px 16px', whiteSpace: 'normal', textAlign: 'center', lineHeight: '1.2' }}
+                                >
+                                    Analyze & Generate Package
+                                </Button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             {/* Parsing Success Modal */}
             <AnimatePresence>
@@ -320,9 +450,9 @@ export default function Builder() {
                 )}
             </AnimatePresence>
 
-            {/* Floating UI Elements (Hidden during Tour or Generation) */}
+            {/* Floating UI Elements (Desktop only - hidden on mobile) */}
             {!(showOnboarding || isGenerating) && (
-                <>
+                <div className="desktop-only">
                     <ThemeToggle />
                     <button
                         onClick={() => setShowOnboarding(true)}
@@ -331,7 +461,7 @@ export default function Builder() {
                     >
                         <HelpCircle size={22} />
                     </button>
-                </>
+                </div>
             )}
 
             {/* Processing Modal Overlay */}
@@ -438,6 +568,33 @@ export default function Builder() {
                 )}
 
                 <nav className="sidebar-nav no-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, overflowY: 'auto', overflowX: 'auto', whiteSpace: 'nowrap' }}>
+                    <a
+                        href="/tracker"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                            textAlign: 'left',
+                            padding: '10px 14px',
+                            borderRadius: '10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            background: 'rgba(var(--primary-rgb), 0.05)',
+                            color: 'var(--primary)',
+                            transition: 'all 0.2s',
+                            fontWeight: 700,
+                            fontSize: '14px',
+                            marginBottom: '16px',
+                            border: '1px solid rgba(var(--primary-rgb), 0.1)',
+                            textDecoration: 'none'
+                        }}
+                    >
+                        <LayoutDashboard size={18} />
+                        Job Tracker
+                    </a>
+
+                    <div style={{ height: '1px', background: 'var(--border-light)', margin: '8px 0 16px', opacity: 0.5 }} />
+
                     {SECTIONS.map((section) => (
                         <button
                             key={section.id}
@@ -475,57 +632,72 @@ export default function Builder() {
                             background: isDragging ? 'rgba(var(--primary-rgb), 0.02)' : 'var(--surface)',
                             transition: 'all 0.3s ease'
                         }}>
-                            <div
-                                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                                onDragLeave={() => setIsDragging(false)}
-                                onDrop={(e) => {
-                                    e.preventDefault();
-                                    setIsDragging(false);
-                                    const file = e.dataTransfer.files?.[0];
-                                    if (file) handleFileChange({ target: { files: [file] } });
-                                }}
-                                style={{
-                                    marginBottom: '32px',
-                                    textAlign: 'center',
-                                    padding: '40px 30px',
-                                    border: '2px dashed var(--border-light)',
-                                    borderRadius: '16px',
-                                    cursor: 'pointer'
-                                }}
-                                onClick={handleUploadClick}
-                            >
-                                <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept=".pdf" onChange={handleFileChange} />
-
-                                {isParsing ? (
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                                        <Loader2 size={32} className="animate-spin" style={{ color: 'var(--primary)' }} />
-                                        <div style={{ fontWeight: 700, color: 'var(--primary)' }}>Auto-Parsing Resume...</div>
-                                        <p style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>This usually takes 10-15 seconds.</p>
+                                {(!hasParsedResume && progress.percent < 25) ? (
+                                    <div
+                                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                                        onDragLeave={() => setIsDragging(false)}
+                                        onDrop={(e) => {
+                                            e.preventDefault();
+                                            setIsDragging(false);
+                                            const file = e.dataTransfer.files?.[0];
+                                            if (file) handleFileChange({ target: { files: [file] } });
+                                        }}
+                                        style={{
+                                            marginBottom: '32px',
+                                            textAlign: 'center',
+                                            padding: '40px 30px',
+                                            border: '2px dashed var(--border-light)',
+                                            borderRadius: '16px',
+                                            cursor: 'pointer'
+                                        }}
+                                        onClick={handleUploadClick}
+                                    >
+                                        <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept=".pdf" onChange={handleFileChange} />
+        
+                                        {isParsing ? (
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                                                <Loader2 size={32} className="animate-spin" style={{ color: 'var(--primary)' }} />
+                                                <div style={{ fontWeight: 700, color: 'var(--primary)' }}>Auto-Parsing Resume...</div>
+                                                <p style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>This usually takes 10-15 seconds.</p>
+                                            </div>
+                                        ) : !uploadedFile ? (
+                                            <>
+                                                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                                                    <Cloud size={24} />
+                                                </div>
+                                                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>Drop your resume here</h3>
+                                                <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '16px' }}>to auto-populate your profile</p>
+                                                <Button variant="secondary">Browse Files</Button>
+                                            </>
+                                        ) : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                                <div style={{ color: 'var(--success)', fontWeight: 700, fontSize: '18px' }}>✓ Resume Attached</div>
+                                                <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{uploadedFile}</div>
+                                                <Button variant="ghost" style={{ fontSize: '12px', marginTop: '8px' }} onClick={(e) => { e.stopPropagation(); handleUploadClick(); }}>Change File</Button>
+                                            </div>
+                                        )}
                                     </div>
-                                ) : !uploadedFile ? (
-                                    <>
-                                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                                            <Cloud size={24} />
-                                        </div>
-                                        <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>Drop your resume here</h3>
-                                        <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '16px' }}>to auto-populate your profile</p>
-                                        <Button variant="secondary">Browse Files</Button>
-                                    </>
                                 ) : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                                        <div style={{ color: 'var(--success)', fontWeight: 700, fontSize: '18px' }}>✓ Resume Attached</div>
-                                        <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{uploadedFile}</div>
-                                        <Button variant="ghost" style={{ fontSize: '12px', marginTop: '8px' }} onClick={(e) => { e.stopPropagation(); handleUploadClick(); }}>Change File</Button>
+                                    <div style={{ marginBottom: '32px', textAlign: 'center', padding: '24px', background: 'rgba(var(--primary-rgb), 0.05)', borderRadius: '16px', border: '1px solid rgba(var(--primary-rgb), 0.1)' }}>
+                                        <div style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '18px', marginBottom: '8px' }}>✨ Profile Populated</div>
+                                        <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '16px' }}>Your profile has existing data. You can edit fields manually or overwrite everything below.</p>
+                                        <Button variant="secondary" onClick={() => {
+                                            if (window.confirm("Uploading a new resume will overwrite your existing profile fields. Are you sure you want to proceed?")) {
+                                                handleUploadClick();
+                                            }
+                                        }}>
+                                            Re-upload Resume (Overwrites Data)
+                                        </Button>
+                                        <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept=".pdf" onChange={handleFileChange} />
                                     </div>
                                 )}
-                            </div>
 
                             <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
                                 <div>
                                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Full Name *</label>
                                     <Input
                                         value={formData.linkedin?.fullName || ''}
-                                        onChange={e => setFormData({ ...formData, linkedin: { ...formData.linkedin, fullName: e.target.value } })}
+                                        onChange={e => handleFieldChange('linkedin', 'fullName', e.target.value)}
                                         placeholder="e.g. Sahithi Boinpalli"
                                     />
                                 </div>
@@ -533,8 +705,26 @@ export default function Builder() {
                                     <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Email</label>
                                     <Input
                                         value={formData.linkedin?.email || ''}
-                                        onChange={e => setFormData({ ...formData, linkedin: { ...formData.linkedin, email: e.target.value } })}
+                                        onChange={e => handleFieldChange('linkedin', 'email', e.target.value)}
                                         placeholder="e.g. sahithiboin@gmail.com"
+                                    />
+                                </div>
+                            </div>
+                            <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Phone Number (Optional)</label>
+                                    <Input
+                                        value={formData.linkedin?.phone || ''}
+                                        onChange={e => handleFieldChange('linkedin', 'phone', e.target.value)}
+                                        placeholder="e.g. +1 234 567 8900"
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Portfolio / Website (Optional)</label>
+                                    <Input
+                                        value={formData.linkedin?.portfolio || ''}
+                                        onChange={e => handleFieldChange('linkedin', 'portfolio', e.target.value)}
+                                        placeholder="e.g. portfolio.com"
                                     />
                                 </div>
                             </div>
@@ -542,8 +732,8 @@ export default function Builder() {
                                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>LinkedIn URL</label>
                                 <Input
                                     value={formData.linkedin?.url || ''}
-                                    onChange={e => setFormData({ ...formData, linkedin: { ...formData.linkedin, url: e.target.value } })}
-                                    placeholder="https://www.linkedin.com/in/..."
+                                    onChange={e => handleFieldChange('linkedin', 'url', e.target.value)}
+                                    placeholder="e.g. linkedin.com/in/sahithiboin"
                                 />
                             </div>
                         </Card>
@@ -736,7 +926,7 @@ export default function Builder() {
                 </div>
 
                 <Button
-                    onClick={handleGenerate}
+                    onClick={handleGenerateClick}
                     variant="primary"
                     style={{
                         width: '240px',

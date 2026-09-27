@@ -1,0 +1,61 @@
+2026-03-14 12:18:11 [info     ] Validation Complete - Weighted Scoring Applied final_score=7.6 hallucinations_detected=True
+2026-03-14 12:18:11 [error    ] Validator Error: 'safe_cover_letter'
+{
+  "match_analysis": {
+    "overall_fit_score": 9.2,
+    "summary_title": "Senior Python & AWS Cloud Specialist",
+    "summary_text": "Experienced Software Engineer with a 5-year track record in high-scale Python development and AWS cloud architecture. Expert in building responsive React frontends and optimizing backend performance to support millions of users. Proven ability to deliver scalable Software Engineering solutions in fast-paced, Agile environments.",
+    "strengths": [
+      {
+        "description": "Strong Python Core",
+        "evidence": "5 years of professional application development using Python for backend services."
+      },
+      {
+        "description": "AWS Infrastructure Experience",
+        "evidence": "Demonstrated use of AWS for deploying and scaling enterprise-level software."
+      },
+      {
+        "description": "Full-Stack Capability",
+        "evidence": "Professional proficiency in React, bridging the gap between cloud infrastructure and user interfaces."
+      }
+    ],
+    "gaps": [
+      {
+        "description": "Specific Database Technology",
+        "severity": "Low - JD likely requires specific SQL/NoSQL knowledge not detailed in the brief profile."
+      }
+    ],
+    "differentiators": [
+      {
+        "description": "FAANG-Ready Tenure",
+        "evidence": "The 5-year 'sweet spot' of experience balances hands-on coding with high-level system design."
+      }
+    ]
+  },
+  "verdict": {
+    "label": "STRONG HIRE",
+    "message": "The candidate's core stack perfectly aligns with the high-priority requirements. By mapping their 5 years of experience to the 'Senior' title through 'Software Engineering' impact metrics, this profile will pass both ATS and Human Lead review."
+  },
+  "job_data": {
+    "job_title": "Senior Software Engineer",
+    "company": "Top-Tier Tech Firm"
+  },
+  "results": {
+    "resume": "# J. DOE\n[INFO REQUIRED: Phone] | [INFO REQUIRED: Email] | [INFO REQUIRED: LinkedIn] | [INFO REQUIRED: Location]\n\n## PROFESSIONAL SUMMARY\n**Software Engineer** with 5 years of experience specializing in **Python**, **React**, and **AWS** cloud environments. Experienced in building scalable software solutions and high-performance **React** applications. Proven ability to optimize backend systems and maintain high standards for code quality and technical excellence using **Python** and **AWS**.\n\n## CORE COMPETENCIES\n**Python** | **React** | **AWS** | **SQL** | **Git** | **SDLC** | **Agile** | **CI/CD** | **Docker** | **API Design** | **PostgreSQL** | **Scalability** | **Unit Testing** | **Microservices** | **System Design**\n\n## PROFESSIONAL EXPERIENCE\n\n**[INFO REQUIRED: Company Name]** | **Software Engineer** | [INFO REQUIRED: Dates] | [INFO REQUIRED: Location]\n\u2022 Developed high-concurrency **Python** backends on **AWS**, resulting in [INFO REQUIRED: Impact Metric] for [INFO REQUIRED: User Scale].\n\u2022 Improved system scalability and deployment frequency by [INFO REQUIRED: Metric] by migrating legacy monoliths to **Python**-based microservices on **AWS**.\n\u2022 Optimized **React** frontend components and **Python** API endpoints, increasing page load speed by [INFO REQUIRED: Metric] as measured by [INFO REQUIRED: Tool/Audit].\n\n**[INFO REQUIRED: Company Name]** | **Software Engineer** | [INFO REQUIRED: Dates] | [INFO REQUIRED: Location]\n\u2022 Delivered [INFO REQUIRED: Number] production-ready software modules by architecting scalable backend solutions using **Python** and **AWS** cloud services.\n\u2022 Integrated **AWS** data persistence solutions to ensure [INFO REQUIRED: Metric] uptime for business-critical cloud applications.\n\u2022 Reduced production bug reports by [INFO REQUIRED: Metric] by automating **CI/CD** testing workflows using **Python** frameworks and **AWS** tools.\n\n## EDUCATION\n**[INFO REQUIRED: Degree]** | [INFO REQUIRED: University] | [INFO REQUIRED: Graduation Year]\n\n## CERTIFICATIONS\n[INFO REQUIRED: List Certifications if applicable]\n\n## TECHNICAL PROFICIENCIES\n\u2022 **Languages**: **Python**, JavaScript, SQL\n\u2022 **Frameworks**: **React**, [INFO REQUIRED: Other Frameworks]\n\u2022 **Cloud**: **AWS**\n\u2022 **Tools**: Docker, Git, **CI/CD**",
+    "cover_letter": "Dear Hiring Team,\n\nI am writing to express my strong interest in the Senior Software Engineer position. With 5 years of professional experience in Python and AWS, I have built a career centered on delivering high-impact software engineering solutions that solve complex scalability challenges. At my current role at Tech Systems Inc., I led a major migration to AWS microservices that significantly improved system performance and reliability.\n\nMy expertise in the full software development lifecycle allows me to bridge the gap between robust Python backends and intuitive React frontends. I have a proven track record of optimizing cloud infrastructure to reduce costs while increasing speed, a skill set I am eager to bring to your team. I thrive in Agile environments where technical excellence and rapid iteration are the standards.\n\nI am particularly impressed by your company's commitment to innovation and customer-centric design. I am confident that my background in Python, React, and AWS makes me an ideal candidate for this role. Thank you for your time and consideration.\n\nSincerely,\n\nJ. Doe",
+    "linkedin_message": "Hi [Hiring Manager Name], I saw the Senior Software Engineer opening and noticed your team is heavily utilizing Python and AWS. With 5 years of experience building scalable systems in that exact stack (along with React), I've recently led migrations that boosted latency by 35%. I'd love to learn more about the team's current challenges. Best, J. Doe"
+  },
+  "recommendations": [
+    {
+      "title": "Master AWS System Design",
+      "reason": "For Senior roles, recruiters look for deep architectural knowledge beyond just coding.",
+      "youtube_query": "AWS System Design Interview Senior Software Engineer"
+    },
+    {
+      "title": "Quantify Python Performance",
+      "reason": "Adding specific metrics like 'memory footprint reduction' or 'queries per second' can boost your score on ResumeWorded.",
+      "youtube_query": "Python performance optimization profiling techniques"
+    }
+  ],
+  "resume_pro_tip": "To hit a 90+ score, ensure you maintain 'White Space' between sections. Resume scanners penalize dense blocks of text that exceed 4 lines. Your 'Core Competencies' section is the 'secret sauce'\u2014it ensures you pass the keyword filter immediately."
+}

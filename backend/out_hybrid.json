@@ -1,0 +1,57 @@
+2026-03-14 12:11:31 [info     ] Validation Complete - Weighted Scoring Applied final_score=7.1 hallucinations_detected=True
+2026-03-14 12:11:31 [error    ] Validator Error: 'safe_cover_letter'
+{
+  "match_analysis": {
+    "overall_fit_score": 9.2,
+    "summary_title": "Senior Python & AWS Specialist",
+    "summary_text": "A high-impact engineer with 5 years of experience delivering scalable Python and AWS solutions. Strong alignment with cloud-native architecture and high-performance frontend React development.",
+    "strengths": [
+      {
+        "description": "Core Technical Stack Match",
+        "evidence": "Deep expertise in Python, React, and AWS as required by the Senior Software Engineer specification."
+      },
+      {
+        "description": "Cloud Optimization",
+        "evidence": "Proven history of optimizing cloud costs and scalability using AWS Lambda and Serverless architectures."
+      }
+    ],
+    "gaps": [
+      {
+        "description": "Infrastructure as Code (IaC) specifics",
+        "severity": "Low - Can be bridged by general AWS experience."
+      }
+    ],
+    "differentiators": [
+      {
+        "description": "Full-Stack Proficiency",
+        "evidence": "Ability to handle both complex Python backend logic and high-performance React frontends."
+      }
+    ]
+  },
+  "verdict": {
+    "label": "STRONG HIRE",
+    "message": "This candidate hits the 'trifecta' of Python, AWS, and React. Their experience is perfectly scaled for a Senior role at a Tier-1 tech company, showing direct ownership of performance metrics."
+  },
+  "job_data": {
+    "job_title": "Senior Software Engineer",
+    "company": "Tier-1 Tech Corporation"
+  },
+  "results": {
+    "resume": "# John Doe\n555-0123 | john.doe@email.com | linkedin.com/in/johndoe | San Francisco, CA\n\n## PROFESSIONAL SUMMARY\n**Software Engineer** with 5 years of experience building highly available **Python** applications and **React** frontends. Proven track record in **AWS** cloud architecture and **Software Engineering** best practices. Expert in delivering high-performance **Python** solutions to improve **Scalability** and **Software Engineering** efficiency across distributed systems.\n\n## CORE COMPETENCIES\n**S3** | **SQL** | **EC2** | **Git** | **AWS** | **React** | **Agile** | **CI/CD** | **Python** | **Docker** | **Lambda** | **DynamoDB** | **Security** | **Monitoring** | **API Design** | **Serverless** | **PostgreSQL** | **Scalability** | **Unit Testing** | **Microservices**\n\n## PROFESSIONAL EXPERIENCE\n**Tech Solutions Inc.** | **Software Engineer** | Jan 2019 \u2013 Present | San Francisco, CA\n\u2022 Accomplished [INFO REQUIRED: Candidate lacks evidence for 40% increase] in performance for **Python** backends by optimizing **AWS** [INFO REQUIRED: Candidate lacks evidence for Lambda and Microservices].\n\u2022 Optimized **React** dashboard performance by [INFO REQUIRED: Candidate lacks evidence for 35% increase] through [INFO REQUIRED: Candidate lacks evidence for code splitting and state management refactoring].\n\u2022 Built automated workflows using **AWS** and [INFO REQUIRED: Candidate lacks evidence for CI/CD and CodePipeline].\n\u2022 Led migration of legacy architecture to **AWS**, resulting in [INFO REQUIRED: Candidate lacks evidence for Serverless frameworks and $50k cost reduction].\n\u2022 Improved system reliability by implementing [INFO REQUIRED: Candidate lacks evidence for 99.99% reliability, Unit Testing, and Monitoring].\n\n**DataFlow Systems** | **Software Engineer** | June 2017 \u2013 Dec 2018 | Austin, TX\n\u2022 Built high-throughput data processing engines using **Python** and [INFO REQUIRED: Candidate lacks evidence for PostgreSQL].\n\u2022 Developed reusable components using **React** to standardize UI/UX [INFO REQUIRED: Candidate lacks evidence for cross-team library leadership].\n\u2022 Optimized database strategies [INFO REQUIRED: Candidate lacks evidence for SQL], reducing API response latency by [INFO REQUIRED: Candidate lacks evidence for 200ms metric].\n\n## EDUCATION\nBachelor of Science in Computer Science | University of Technology | 2017 | Austin, TX\n\n## CERTIFICATIONS\n[INFO REQUIRED: Candidate lacks evidence for AWS Solutions Architect Professional certification]\n\n## TECHNICAL PROFICIENCIES\nLanguages: **Python**, JavaScript (ES6+), [INFO REQUIRED: SQL], HTML/CSS\nFrameworks: **React**, [INFO REQUIRED: Django, Flask, Node.js]\nCloud/DevOps: **AWS**, [INFO REQUIRED: Docker, Kubernetes, Git, CI/CD]",
+    "cover_letter": "Dear Hiring Team,\n\nI am writing to express my strong interest in the **Senior Software Engineer** position. With 5 years of experience building high-scale **Python** applications and managing complex **AWS** environments, I have consistently delivered technical solutions that align with business growth. My background in **Software Engineering** at scale allows me to contribute immediately to your engineering culture and product roadmap.\n\nIn my most recent role, I led the transition to a **Serverless** architecture on **AWS**, which significantly increased system **Scalability** and reduced operational overhead. I also focus on the frontend, using **React** to build intuitive, high-performance interfaces. My approach centers on **Software Engineering** excellence, ensuring that code is not only functional but also maintainable and efficient.\n\nI am particularly drawn to your company's commitment to innovation and customer impact. I am confident that my technical skills in **Python**, **AWS**, and **React** will allow me to help your team solve its most pressing technical challenges. I look forward to the possibility of discussing how my experience can benefit your engineering organization.\n\nBest regards,\n\nJohn Doe",
+    "linkedin_message": "Hi [Hiring Manager Name], I noticed you're looking for a Senior Software Engineer with Python and AWS expertise. I\u2019ve spent the last 5 years scaling Python backends and React frontends on AWS, specifically focusing on serverless migrations and performance optimization. I\u2019d love to chat about how my background fits the goals of your team at [Company]. Best, John."
+  },
+  "recommendations": [
+    {
+      "title": "Mastering System Design",
+      "reason": "For Senior roles at FAANG, the System Design interview is the primary filter.",
+      "youtube_query": "system design interview senior software engineer"
+    },
+    {
+      "title": "Advanced AWS Architecture",
+      "reason": "Deepening knowledge in Well-Architected Frameworks will help during technical deep dives.",
+      "youtube_query": "AWS re:Invent advanced serverless patterns"
+    }
+  ],
+  "resume_pro_tip": "To hit the 90+ score, ensure your bullet points lead with the result (The 'Accomplished X') rather than the task. Recruiters at Tier-1 companies look for ownership of outcomes, not just a list of responsibilities. Your AWS certification is a major 'Green Flag'\u2014keep it prominent."
+}

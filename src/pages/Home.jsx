@@ -1,25 +1,15 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/Button';
-import { Textarea } from '../components/Input';
 import Carousel from '../components/Carousel';
 import { useAuth } from '../components/AuthContext';
 import { motion } from 'framer-motion';
-import { LogIn, ArrowRight, Sparkles, ClipboardCheck, UserCircle, Rocket, Cpu, FileCheck, Layers } from 'lucide-react';
+import { LogIn, ArrowRight, Sparkles, ClipboardCheck, UserCircle, Rocket, Cpu, FileCheck, Layers, LayoutDashboard, LogOut } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 
 export default function Home() {
     const navigate = useNavigate();
-    const { currentUser, loginWithGoogle } = useAuth();
-    const [jobDescription, setJobDescription] = useState('');
-
-    const handleNext = () => {
-        localStorage.setItem('rolefit_job_description', jobDescription);
-        navigate('/builder');
-    };
-
-    const wordCount = jobDescription.length;
-    const isEnabled = wordCount > 200;
+    const { currentUser, loginWithGoogle, logout } = useAuth();
 
     return (
         <div style={{ background: 'var(--background)', minHeight: '100vh', transition: 'all 0.3s ease' }}>
@@ -82,12 +72,22 @@ export default function Home() {
                                 Welcome back, {currentUser.displayName.split(' ')[0]}!
                             </p>
                             <Button
-                                variant="secondary"
-                                onClick={() => document.getElementById('input-section').scrollIntoView({ behavior: 'smooth' })}
-                                style={{ padding: '0 40px', height: '56px', fontSize: '16px' }}
+                                variant="primary"
+                                onClick={() => navigate('/builder')}
+                                style={{ padding: '0 40px', height: '56px', fontSize: '16px', gap: '8px' }}
                             >
-                                Start New Application
+                                Build Your Profile <ArrowRight size={18} />
                             </Button>
+                            <button
+                                onClick={logout}
+                                style={{ 
+                                    background: 'none', border: 'none', color: 'var(--text-tertiary)', 
+                                    fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+                                    marginTop: '8px'
+                                }}
+                            >
+                                <LogOut size={14} /> Sign Out
+                            </button>
                         </div>
                     )}
                 </motion.div>
@@ -164,77 +164,13 @@ export default function Home() {
             </div>
 
 
-            {/* Input Section */}
-            <div id="input-section" style={{ maxWidth: '800px', margin: '0 auto', padding: 'clamp(40px, 10vw, 80px) 20px' }}>
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    className="card mobile-full"
-                    style={{ padding: 'clamp(24px, 5vw, 48px)', border: '2px solid var(--primary)', background: 'var(--surface)' }}
-                >
-                    <h2 style={{ fontSize: 'clamp(24px, 5vw, 32px)', marginBottom: '12px', textAlign: 'center' }}>Analyze Your Dream Job</h2>
-                    <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '40px' }}>Paste the job description below to start your transformation.</p>
-
-                    <div style={{ position: 'relative', marginBottom: '24px' }}>
-                        <label style={{
-                            display: 'block',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: 'var(--text-primary)',
-                            marginBottom: '12px'
-                        }}>
-                            Paste Job Description
-                        </label>
-                        <Textarea
-                            placeholder="Paste the complete job posting here..."
-                            style={{ minHeight: '300px' }}
-                            value={jobDescription}
-                            onChange={(e) => setJobDescription(e.target.value)}
-                        />
-                        <div style={{
-                            position: 'absolute',
-                            bottom: '16px',
-                            right: '16px',
-                            fontSize: '12px',
-                            color: 'var(--text-tertiary)'
-                        }}>
-                            {wordCount} characters
-                        </div>
-                    </div>
-
-                    <Button
-                        variant="primary"
-                        disabled={!isEnabled}
-                        onClick={handleNext}
-                        style={{ width: '100%', height: '60px', fontSize: '18px', gap: '12px' }}
-                    >
-                        Create Application Package <ArrowRight size={20} />
-                    </Button>
-
-                    {!isEnabled && (
-                        <div style={{
-                            textAlign: 'center',
-                            marginTop: '20px',
-                            padding: '12px',
-                            background: 'rgba(var(--primary-rgb), 0.05)',
-                            borderRadius: '12px',
-                            border: '1px solid rgba(var(--primary-rgb), 0.1)'
-                        }}>
-                            <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: 'var(--primary)' }}>
-                                ✨ Paste at least 200 characters to begin analysis.
-                            </p>
-                            <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-tertiary)' }}>
-                                The more context you provide, the better the AI results.
-                            </p>
-                        </div>
-                    )}
-                </motion.div>
-            </div>
-
             {/* Footer */}
-            <footer style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-tertiary)', fontSize: '14px' }}>
-                © 2026 RoleFit AI. Built for high-performers.
+            <footer style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-tertiary)', fontSize: '14px', borderTop: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '24px' }}>
+                    <Link to="/about" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>About Us</Link>
+                    <Link to="/contact" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Contact Us</Link>
+                </div>
+                <div>© 2026 RoleFit AI. Built for high-performers.</div>
             </footer>
         </div>
     );

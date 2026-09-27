@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
 from typing import List, Optional, Dict, Any
 
 class JobDescriptionInput(BaseModel):
@@ -31,7 +31,25 @@ class RefineRequest(BaseModel):
     job_data: Dict[str, Any]
     match_analysis: Dict[str, Any]
     original_results: Dict[str, Any]
-    refinement_prompt: str
+    refinement_prompt: Optional[str] = None
+    chat_history: Optional[List[Dict[str, str]]] = None
 
 class ResumeInput(BaseModel):
     resume_text: str
+
+
+NonBlankString = constr(strip_whitespace=True, min_length=1)
+
+
+class IngestJobData(BaseModel):
+    title: NonBlankString
+    company: NonBlankString
+    location: str
+    applyUrl: NonBlankString
+
+
+class IngestJobRequest(BaseModel):
+    userId: NonBlankString
+    userProfile: UserProfile
+    jobData: IngestJobData
+    jdText: NonBlankString

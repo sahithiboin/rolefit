@@ -12,6 +12,7 @@ venv/
 .env.test.local
 .env.production.local
 backend/.env
+backend/service-account.json
 
 # Build outputs
 dist/
@@ -34,3 +35,8 @@ backend/RoleFit_Audit_Report.docx
 backend/check_models.py
 backend/test_fix.py
 backend/test_tone.py
+
+# Local Job Scout receipts and reports
+.job-scout/
+
+backend/gen-lang-client-0247915711-b44a1a8beafb.json

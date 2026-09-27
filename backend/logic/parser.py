@@ -90,7 +90,7 @@ def parse_resume(resume_text: str) -> dict:
                 "role": "Title",
                 "duration": "Start - End Date",
                 "location": "City, Country",
-                "description": "Key responsibilities and achievements"
+                "description": "Extract ALL sentences and bullet points detailing responsibilities and achievements for this role verbatim. Do NOT summarize or cut it short to just the first sentence."
             }}
         ],
         "education": [

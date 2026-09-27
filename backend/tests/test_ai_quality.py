@@ -11,7 +11,10 @@ if backend_dir not in sys.path:
     sys.path.append(backend_dir)
 
 from logic.generator import generate_all_in_one, clean_json_string, extract_json_from_text
-import services.gemini # Triggers dotenv load and genai.configure
+import services.gemini # Triggers dotenv load
+
+# Configure the deprecated genai library used for the judge
+genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
 
 def get_judge_model():
     """

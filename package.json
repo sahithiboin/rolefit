@@ -7,7 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "job-scout": "node --import tsx scripts/jobScout.ts",
+    "job-scout:test": "node --import tsx --test scripts/jobScout.test.ts",
+    "job-scout:typecheck": "tsc -p scripts/tsconfig.json",
+    "sync-sheets": "ts-node scripts/syncToSheets.ts",
+    "sync-sheets:test": "node --import tsx --test scripts/syncToSheets.test.ts"
   },
   "dependencies": {
     "clsx": "^2.1.0",
@@ -16,6 +21,7 @@
     "firebase": "^12.7.0",
     "framer-motion": "^12.25.0",
     "jspdf": "^4.0.0",
+    "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.344.0",
     "pdfjs-dist": "^5.4.530",
     "react": "^18.3.1",
@@ -26,13 +32,22 @@
     "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
+    "@google-cloud/firestore": "^9.1.0",
+    "@types/node": "^22.20.2",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "dotenv": "^17.4.2",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "google-auth-library": "^11.0.2",
+    "googleapis": "^180.0.0",
+    "playwright": "^1.63.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3",
     "vite": "^5.2.0"
   }
 }

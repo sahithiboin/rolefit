@@ -124,10 +124,12 @@ class TestAuditHallucination:
         2. Did the text invent any job title, company name, skill, or degree not in Source?
         3. Did the text claim experience with any "Forbidden Fact"?
         4. IGNORE formatting changes or rephrasing (e.g., "Cashier" -> "Sales Associate" is okay if job desc supports it, but "Cashier" -> "Manager" is NOT).
+        
+        CRITICAL: Placeholders like "[Metric]", "[Number]", "[X]%", or "[Insert Data]" are NOT hallucinations. They are strategic "Gap Analysis" markers used when source data is missing. If the text uses these, it is a SUCCESS (Safety), not a FAIL (Hallucination).
 
         OUTPUT (JSON):
         {{
-            "hallucinations_detected": boolean,
+            "hallucinations_detected": boolean (MUST BE FALSE IF ONLY PLACEHOLDERS WERE USED),
             "details": "string explaining what was invented"
         }}
         """
@@ -159,12 +161,14 @@ class TestAuditHallucination:
         {json.dumps(forbidden_patterns)}
 
         TASK:
-        If you see "increased by 20%" in Generated, but Source only said "increased sales", that is a PASS (Fabrication).
+        If you see "increased by 20%" in Generated, but Source only said "increased sales", that is a FAIL (Fabrication).
         If Source has "20%", then it's OK.
+        
+        CRITICAL: If the AI uses a placeholder like "[Metric]", "[Number]", or "[X]%" because the source was missing data, that is NOT a fabrication. It is a SUCCESS (Zero-Hallucination Guardrail).
 
         OUTPUT (JSON):
         {{
-            "fabrications_detected": boolean,
+            "fabrications_detected": boolean (MUST BE FALSE IF ONLY PLACEHOLDERS WERE USED),
             "details": "string"
         }}
         """

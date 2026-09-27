@@ -5,10 +5,14 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { api, transformProfileForBackend } from '../lib/api';
-import { ArrowLeft, Sparkles, Edit3, RotateCcw, Send, Download, GraduationCap, ExternalLink, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Sparkles, Edit3, RotateCcw, Send, Download, GraduationCap, ExternalLink, Lightbulb, LayoutDashboard, LogOut } from 'lucide-react';
 import { downloadResumePDF, downloadCoverLetterPDF } from '../lib/pdfGenerator';
-import { downloadResumeDOCX, downloadCoverLetterDOCX } from '../lib/docxGenerator';
+import { downloadCoverLetterDOCX, downloadResumeDOCX } from '../lib/docxGenerator';
+import { tracker } from '../lib/tracker';
+import { useAuth } from '../components/AuthContext';
+import AutoTrackModal from '../components/AutoTrackModal';
 import ThemeToggle from '../components/ThemeToggle';
+import { analytics } from '../lib/analytics';
 
 const TABS = [
     { id: 'fit', label: 'Fit Analysis' },
@@ -23,49 +27,163 @@ export default function Results() {
     const location = useLocation();
     const navigate = useNavigate();
 
+    const { matchAnalysis: initialMatchAnalysis, jobData, formData, verdict, recommendations, resumeProTip, shouldPromptTracking } = location.state || {};
+
     const [localResults, setLocalResults] = useState(location.state?.results || null);
-    const [isRefining, setIsRefining] = useState(false);
-    const [refinePrompt, setRefinePrompt] = useState('');
-    const [isRefineLoading, setIsRefineLoading] = useState(false);
+    const [localMatchAnalysis, setLocalMatchAnalysis] = useState(initialMatchAnalysis || null);
+    const matchAnalysis = localMatchAnalysis; // Alias back for all references
+
+    // Chat Copilot State
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [chatHistory, setChatHistory] = useState([
+        { id: Date.now(), role: 'assistant', message: "Hey bestie! ✨ I'm your AI Copilot. What are we tweaking today?", snapshot_results: location.state?.results || null, snapshot_analysis: initialMatchAnalysis || null }
+    ]);
+    const [chatInput, setChatInput] = useState('');
+    const [isChatLoading, setIsChatLoading] = useState(false);
+
+    // Interview Prep WTP State
+    const [isWtpOpen, setIsWtpOpen] = useState(false);
+
     const [isDownloadingResume, setIsDownloadingResume] = useState(false);
     const [isDownloadingCover, setIsDownloadingCover] = useState(false);
     const [isDownloadingResumeDocx, setIsDownloadingResumeDocx] = useState(false);
     const [isDownloadingCoverDocx, setIsDownloadingCoverDocx] = useState(false);
+    const [showTrackModal, setShowTrackModal] = useState(false);
+    const [hasTracked, setHasTracked] = useState(false);
 
-    const { matchAnalysis, jobData, formData, verdict, recommendations, resumeProTip } = location.state || {};
+    const { currentUser, logout } = useAuth();
 
     useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
         if (!location.state) {
             navigate('/builder');
+            return;
         }
-    }, [navigate, location.state]);
+
+        if (shouldPromptTracking && !hasTracked) {
+            setShowTrackModal(true);
+        }
+
+        // Track view on load
+        if (localResults) {
+            const ttv = analytics.getDuration('generation_to_results');
+            analytics.trackEvent('artifact_viewed', {
+                fit_score: matchAnalysis?.overall_fit_score,
+                verdict: verdict?.label,
+                ttv_seconds: ttv || undefined
+            });
+        }
+    }, [navigate, location.state, shouldPromptTracking, hasTracked]);
+
+    // Track tab switches (Generation Depth)
+    const handleTabChange = (tabId) => {
+        setActiveTab(tabId);
+        analytics.trackEvent('tab_viewed', { tab_id: tabId });
+    };
+
+    const handleConfirmTrack = async () => {
+        console.log("handleConfirmTrack called", { currentUser: !!currentUser, jobData: !!jobData, localResults: !!localResults });
+
+        if (!currentUser || !jobData) {
+            console.warn("Tracking aborted: Missing user or job data", { currentUser, jobData });
+            return;
+        }
+
+        try {
+            console.log("Sending to tracker.addJob...", {
+                userId: currentUser.uid,
+                job_title: jobData.job_title,
+                company: jobData.company
+            });
+
+            await tracker.addJob(currentUser.uid, {
+                ...jobData,
+                matchAnalysis: matchAnalysis || null,
+                source: 'Generated',
+                package: localResults || null
+            });
+            setHasTracked(true);
+            setShowTrackModal(false);
+            alert("Job successfully added to your tracker! 🚀");
+        } catch (error) {
+            console.error("Failed to track job:", error);
+            alert(`Failed to add to tracker: ${error.message}`);
+        }
+    };
 
     const handleRefine = async () => {
-        if (!refinePrompt.trim()) return;
+        if (!chatInput.trim()) return;
 
-        setIsRefineLoading(true);
+        const userMessage = chatInput.trim();
+        setChatInput('');
+        
+        const newUserMsg = { id: Date.now(), role: 'user', message: userMessage };
+        setChatHistory(prev => [...prev, newUserMsg]);
+        setIsChatLoading(true);
+
         try {
             const userProfile = transformProfileForBackend(formData);
             const response = await api.refinePackage({
                 user_profile: userProfile,
                 job_data: jobData,
-                match_analysis: matchAnalysis,
+                match_analysis: localMatchAnalysis,
                 original_results: localResults,
-                refinement_prompt: refinePrompt
+                chat_history: chatHistory.map(m => ({ role: m.role, message: m.message })),
+                refinement_prompt: userMessage
             });
 
-            setLocalResults(prev => ({
-                ...prev,
-                ...response
-            }));
-            setIsRefining(false);
-            setRefinePrompt('');
+            // Update document view
+            const newResults = {
+                resume: response.resume || localResults.resume,
+                cover_letter: response.cover_letter || localResults.cover_letter,
+                linkedin_message: response.linkedin_message || localResults.linkedin_message
+            };
+            setLocalResults(newResults);
+            
+            let newAnalysis = localMatchAnalysis;
+            if (response.match_analysis) {
+                newAnalysis = response.match_analysis;
+                setLocalMatchAnalysis(response.match_analysis);
+            }
+
+            // Add Assistant message with snapshot
+            setChatHistory(prev => [...prev, {
+                id: Date.now(),
+                role: 'assistant',
+                message: response.agent_message || "Done! 🚀 Let me know if you need any other tweaks.",
+                snapshot_results: newResults,
+                snapshot_analysis: newAnalysis
+            }]);
+
+            analytics.trackEvent('ai_refine_success', { prompt_length: userMessage.length });
         } catch (error) {
             console.error("Refinement failed:", error);
-            alert("Sorry, we couldn't refine your results. Please try again.");
+            analytics.trackError(`Refinement failed: ${error.message}`);
+            setChatHistory(prev => [...prev, { id: Date.now(), role: 'assistant', message: `Oops! 💀 Something went wrong: ${error.message}` }]);
         } finally {
-            setIsRefineLoading(false);
+            setIsChatLoading(false);
         }
+    };
+
+    const handleRestoreSnapshot = (msg) => {
+        if (msg.snapshot_results) {
+            setLocalResults(msg.snapshot_results);
+            if (msg.snapshot_analysis) setLocalMatchAnalysis(msg.snapshot_analysis);
+            
+            setChatHistory(prev => [...prev, {
+                id: Date.now(),
+                role: 'assistant',
+                message: "Got you! Reverted to that version. ⏪",
+                snapshot_results: msg.snapshot_results,
+                snapshot_analysis: msg.snapshot_analysis
+            }]);
+        }
+    };
+
+    const handleWtpClick = (tier, price) => {
+        analytics.trackEvent('interview_prep_wtp_click', { tier, price });
+        alert("Thanks for your interest! We're building this feature right now and you'll be the first to know when it drops. 🚀");
+        setIsWtpOpen(false);
     };
 
     const handleDownloadResume = async () => {
@@ -73,8 +191,10 @@ export default function Results() {
         try {
             await new Promise(resolve => setTimeout(resolve, 300)); // Small delay for UX
             downloadResumePDF(localResults?.resume || '', jobData?.job_title || '');
+            analytics.trackEvent('artifact_download', { type: 'resume', format: 'pdf' });
         } catch (error) {
             console.error("Resume download failed:", error);
+            analytics.trackError(`Resume download failed: ${error.message}`);
             alert("Sorry, we couldn't download the resume. Please try again.");
         } finally {
             setIsDownloadingResume(false);
@@ -86,8 +206,10 @@ export default function Results() {
         try {
             await new Promise(resolve => setTimeout(resolve, 300)); // Small delay for UX
             downloadCoverLetterPDF(localResults?.cover_letter || '', jobData?.job_title || '');
+            analytics.trackEvent('artifact_download', { type: 'cover_letter', format: 'pdf' });
         } catch (error) {
             console.error("Cover letter download failed:", error);
+            analytics.trackError(`Cover letter download failed: ${error.message}`);
             alert("Sorry, we couldn't download the cover letter. Please try again.");
         } finally {
             setIsDownloadingCover(false);
@@ -98,8 +220,10 @@ export default function Results() {
         setIsDownloadingResumeDocx(true);
         try {
             await downloadResumeDOCX(localResults?.resume || '', jobData?.job_title || '');
+            analytics.trackEvent('artifact_download', { type: 'resume', format: 'docx' });
         } catch (error) {
             console.error("Resume DOCX download failed:", error);
+            analytics.trackError(`Resume DOCX download failed: ${error.message}`);
             alert("Sorry, we couldn't download the resume as DOCX. Please try again.");
         } finally {
             setIsDownloadingResumeDocx(false);
@@ -110,8 +234,10 @@ export default function Results() {
         setIsDownloadingCoverDocx(true);
         try {
             await downloadCoverLetterDOCX(localResults?.cover_letter || '', jobData?.job_title || '');
+            analytics.trackEvent('artifact_download', { type: 'cover_letter', format: 'docx' });
         } catch (error) {
             console.error("Cover letter DOCX download failed:", error);
+            analytics.trackError(`Cover letter DOCX download failed: ${error.message}`);
             alert("Sorry, we couldn't download the cover letter as DOCX. Please try again.");
         } finally {
             setIsDownloadingCoverDocx(false);
@@ -124,7 +250,7 @@ export default function Results() {
 
     return (
         <div style={{ minHeight: '100vh', background: 'var(--background)', transition: 'all 0.3s ease', color: 'var(--text-primary)' }}>
-            {!isRefining && <ThemeToggle />}
+            {!isChatOpen && <ThemeToggle className="mobile-only" />}
 
             {/* Header */}
             <div style={{
@@ -147,37 +273,59 @@ export default function Results() {
                         .tab-list { gap: 20px !important; }
                     }
                 `}</style>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <button onClick={() => navigate('/builder', { state: { formData } })} style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <div style={{ fontWeight: 800, fontSize: '20px' }}>Application Package</div>
-                        <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Tailored for {jobData?.job_title || 'Target Role'}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', width: '100%', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <button onClick={() => navigate('/builder', { state: { formData } })} style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                            <ArrowLeft size={20} />
+                        </button>
+                        <div>
+                            <div style={{ fontWeight: 800, fontSize: '20px' }}>Application Package</div>
+                            <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Tailored for {jobData?.job_title || 'Target Role'}</div>
+                        </div>
                     </div>
+                    {currentUser && (
+                        <button onClick={logout} style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', background: 'none', border: 'none', padding: '8px', display: 'none', alignItems: 'center', gap: '4px', cursor: 'pointer' }} className="mobile-only">
+                            <LogOut size={16} /> Sign Out
+                        </button>
+                    )}
                 </div>
-                <div className="results-header-actions" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <Button
-                        variant="secondary"
-                        style={{ height: '44px', borderRadius: '12px', fontSize: '14px' }}
+                <div className="results-header-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <button
+                        title="Tracker"
+                        onClick={() => navigate('/tracker')}
+                        style={{ height: '36px', padding: '0 12px', borderRadius: '10px', background: 'var(--background)', border: '1px solid var(--border-light)', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, flexShrink: 0 }}
+                    >
+                        <LayoutDashboard size={15} /> Tracker
+                    </button>
+                    <button
+                        title="New Job"
                         onClick={() => navigate('/', { state: { formData } })}
+                        style={{ height: '36px', padding: '0 12px', borderRadius: '10px', background: 'var(--background)', border: '1px solid var(--border-light)', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, flexShrink: 0 }}
                     >
-                        <RotateCcw size={16} style={{ marginRight: '8px' }} /> New Job
-                    </Button>
+                        <RotateCcw size={14} /> New Job
+                    </button>
+                    <button
+                        title="Edit Profile"
+                        onClick={() => navigate('/builder', { state: { formData } })}
+                        style={{ height: '36px', padding: '0 12px', borderRadius: '10px', background: 'var(--background)', border: '1px solid var(--border-light)', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, flexShrink: 0 }}
+                    >
+                        <Edit3 size={14} /> Edit Profile
+                    </button>
                     <Button
                         variant="secondary"
-                        style={{ height: '44px', borderRadius: '12px', fontSize: '14px' }}
-                        onClick={() => navigate('/builder', { state: { formData } })}
+                        style={{ height: '36px', borderRadius: '10px', fontSize: '13px', border: '1px solid var(--primary)', color: 'var(--primary)', fontWeight: 700, whiteSpace: 'nowrap', padding: '0 14px' }}
+                        onClick={() => setIsWtpOpen(true)}
                     >
-                        <Edit3 size={16} style={{ marginRight: '8px' }} /> Edit Profile
+                        🎤 Interview Prep
                     </Button>
                     <Button
-                        variant="primary"
-                        style={{ height: '44px', borderRadius: '12px', fontSize: '14px', gap: '8px' }}
-                        onClick={() => setIsRefining(true)}
+                        variant={isChatOpen ? "secondary" : "primary"}
+                        style={{ height: '36px', borderRadius: '10px', fontSize: '13px', gap: '6px', border: isChatOpen ? '2px solid var(--primary)' : 'none', padding: '0 14px', whiteSpace: 'nowrap' }}
+                        onClick={() => setIsChatOpen(!isChatOpen)}
                     >
-                        <Sparkles size={16} /> Refine with AI
+                        <Sparkles size={15} /> {isChatOpen ? 'Close AI' : 'Refine with AI'}
                     </Button>
+                    <ThemeToggle inline={true} className="desktop-only" style={{ background: 'none', border: 'none', boxShadow: 'none', width: '34px', height: '34px' }} />
                 </div>
             </div>
 
@@ -189,7 +337,7 @@ export default function Results() {
                     {TABS.map(tab => (
                         <button
                             key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
+                            onClick={() => handleTabChange(tab.id)}
                             style={{
                                 padding: '20px 0',
                                 borderBottom: activeTab === tab.id ? '3px solid var(--primary)' : '3px solid transparent',
@@ -209,6 +357,7 @@ export default function Results() {
 
             {/* Content Container */}
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
+                <div> {/* Start of main content */}
 
                 {activeTab === 'fit' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
@@ -404,6 +553,21 @@ export default function Results() {
                             lineHeight: '1.6',
                             borderRadius: '4px'
                         }}>
+                            <style>{`
+                                .paper-container h1 {
+                                    text-align: center !important;
+                                }
+                                .paper-container h1 + p,
+                                .paper-container h1 + p + p {
+                                    text-align: center !important;
+                                }
+                                .paper-container p {
+                                    text-align: justify;
+                                }
+                                .paper-container li {
+                                    text-align: justify;
+                                }
+                            `}</style>
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                 {activeTab === 'resume' ? localResults?.resume : localResults?.cover_letter}
                             </ReactMarkdown>
@@ -475,52 +639,101 @@ export default function Results() {
                     </div>
                 )}
 
-                {/* Refinement Modal */}
-                {isRefining && (
-                    <div style={{
-                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                        background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 1000, backdropFilter: 'blur(8px)'
-                    }}>
-                        <Card style={{ width: '90%', maxWidth: '550px', padding: '40px', borderRadius: '24px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                                <div style={{ width: '40px', height: '40px', background: 'var(--primary)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                                    <Sparkles size={20} />
-                                </div>
-                                <h3 style={{ fontSize: '24px', fontWeight: 800 }}>Refine with AI</h3>
-                            </div>
-                            <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '32px' }}>
-                                Describe how you'd like to adjust the results. For example: "Make it more professional" or "Highlight my React skills more".
-                            </p>
-
-                            <textarea
-                                value={refinePrompt}
-                                onChange={(e) => setRefinePrompt(e.target.value)}
-                                placeholder="Type your adjustment instructions..."
-                                style={{
-                                    width: '100%', height: '140px', padding: '20px', borderRadius: '16px',
-                                    border: '2px solid var(--border-light)', fontSize: '15px', resize: 'none',
-                                    background: 'var(--background)', color: 'var(--text-primary)',
-                                    marginBottom: '32px', outline: 'none', transition: 'border-color 0.2s'
-                                }}
-                                onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
-                                onBlur={(e) => e.target.style.borderColor = 'var(--border-light)'}
-                            />
-
-                            <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end' }}>
-                                <Button variant="ghost" onClick={() => setIsRefining(false)} disabled={isRefineLoading}>Cancel</Button>
-                                <Button
-                                    variant="primary"
-                                    onClick={handleRefine}
-                                    disabled={isRefineLoading || !refinePrompt.trim()}
-                                    style={{ padding: '0 32px' }}
-                                >
-                                    {isRefineLoading ? 'Generating...' : <><Send size={18} style={{ marginRight: '10px' }} /> Update Package</>}
-                                </Button>
-                            </div>
-                        </Card>
+                </div> {/* End of main content col */}
+                
+                {/* Chat Copilot Popup */}
+                <div style={{
+                    position: 'fixed',
+                    bottom: '16px',
+                    right: '16px',
+                    width: 'clamp(280px, 100vw - 32px, 380px)',
+                    height: '600px',
+                    maxHeight: 'calc(100vh - 100px)',
+                    background: 'var(--surface)',
+                    borderRadius: '24px',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+                    border: '1px solid var(--border-light)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transform: isChatOpen ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
+                    opacity: isChatOpen ? 1 : 0,
+                    pointerEvents: isChatOpen ? 'auto' : 'none',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    zIndex: 1000,
+                    overflow: 'hidden'
+                }}>
+                    <div style={{ padding: '20px', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: '12px', position: 'sticky', top: 0, background: 'var(--surface)', zIndex: 10 }}>
+                        <div style={{ width: '32px', height: '32px', background: 'var(--primary)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                            <Sparkles size={16} />
+                        </div>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, flex: 1 }}>GenZ Copilot</h3>
+                        <button onClick={() => setIsChatOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
                     </div>
-                )}
+                    
+                    <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto' }}>
+                        {chatHistory.map((msg) => (
+                            <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                                <div style={{
+                                    background: msg.role === 'user' ? 'var(--primary)' : 'rgba(var(--primary-rgb), 0.1)',
+                                    color: msg.role === 'user' ? 'white' : 'var(--text-primary)',
+                                    padding: '12px 16px',
+                                    borderRadius: '16px',
+                                    borderBottomRightRadius: msg.role === 'user' ? '4px' : '16px',
+                                    borderBottomLeftRadius: msg.role === 'assistant' ? '4px' : '16px',
+                                    maxWidth: '90%',
+                                    fontSize: '14px',
+                                    lineHeight: 1.5,
+                                    wordBreak: 'break-word'
+                                }}>
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.message}</ReactMarkdown>
+                                </div>
+                                {msg.role === 'assistant' && msg.snapshot_results && (
+                                    <button 
+                                        onClick={() => handleRestoreSnapshot(msg)}
+                                        style={{
+                                            marginTop: '6px', fontSize: '12px', background: 'none', border: 'none', 
+                                            color: 'var(--text-tertiary)', cursor: 'pointer', fontWeight: 600, padding: 0
+                                        }}>
+                                        ⮌ Restore version
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                        {isChatLoading && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 16px', background: 'rgba(var(--primary-rgb), 0.1)', borderRadius: '16px', maxWidth: '80px' }}>
+                                <div className="typing-dot" style={{ width: '6px', height: '6px', background: 'var(--primary)', borderRadius: '50%', animation: 'bounce 1.4s infinite ease-in-out both' }}></div>
+                                <div className="typing-dot" style={{ width: '6px', height: '6px', background: 'var(--primary)', borderRadius: '50%', animation: 'bounce 1.4s infinite ease-in-out both', animationDelay: '0.2s' }}></div>
+                                <div className="typing-dot" style={{ width: '6px', height: '6px', background: 'var(--primary)', borderRadius: '50%', animation: 'bounce 1.4s infinite ease-in-out both', animationDelay: '0.4s' }}></div>
+                                <style>{`@keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }`}</style>
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ padding: '16px', borderTop: '1px solid var(--border-light)', position: 'sticky', bottom: 0, background: 'var(--surface)' }}>
+                        <div style={{ display: 'flex', gap: '8px', background: 'var(--background)', padding: '8px', borderRadius: '16px', border: '1px solid var(--border-light)' }}>
+                            <input
+                                type="text"
+                                value={chatInput}
+                                onChange={(e) => setChatInput(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleRefine()}
+                                placeholder="Make it slay..."
+                                style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '14px', padding: '0 8px', color: 'var(--text-primary)', width: '100%' }}
+                                disabled={isChatLoading}
+                            />
+                            <Button variant="primary" style={{ padding: '8px', height: 'auto', borderRadius: '10px' }} onClick={handleRefine} disabled={isChatLoading || !chatInput.trim()}>
+                                <Send size={16} />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                <AutoTrackModal
+                    isOpen={showTrackModal}
+                    onClose={() => setShowTrackModal(false)}
+                    onConfirm={handleConfirmTrack}
+                    jobTitle={jobData?.job_title}
+                    company={jobData?.company}
+                />
 
                 {/* Feedback Section */}
                 <div style={{
@@ -558,6 +771,60 @@ export default function Results() {
                     </Button>
                 </div>
 
+                {/* WTP Smoke Test Modal */}
+                {isWtpOpen && (
+                    <div style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        zIndex: 2000, backdropFilter: 'blur(8px)'
+                    }}>
+                        <Card style={{ width: '90%', maxWidth: '600px', padding: '40px', borderRadius: '24px', position: 'relative' }}>
+                            <button 
+                                onClick={() => setIsWtpOpen(false)}
+                                style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: 'var(--text-tertiary)' }}
+                            >
+                                ✕
+                            </button>
+                            
+                            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '60px', height: '60px', borderRadius: '16px', background: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary)', marginBottom: '16px' }}>
+                                    <Sparkles size={28} />
+                                </div>
+                                <h3 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '12px' }}>Ace Your Next Interview 🎙️</h3>
+                                <p style={{ fontSize: '16px', color: 'var(--text-secondary)' }}>
+                                    We're building an AI Interview Copilot to run hyper-realistic mock interviews tailored to your exact Resume and Target Role. Pick a pre-order plan below to get early access!
+                                </p>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '20px', marginBottom: '16px' }}>
+                                <div 
+                                    style={{ display: 'flex', flexDirection: 'column', border: '2px solid var(--border-light)', borderRadius: '16px', padding: '24px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s', background: 'var(--surface)' }}
+                                    onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
+                                    onMouseOut={(e) => e.currentTarget.style.borderColor = 'var(--border-light)'}
+                                    onClick={() => handleWtpClick('pay_per_role', '$7')}
+                                >
+                                    <h4 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>Pay-Per-Role</h4>
+                                    <p style={{ flex: 1, fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>1 Complete Interview Masterclass</p>
+                                    <div style={{ fontSize: '32px', fontWeight: 900, marginBottom: '4px' }}>$7</div>
+                                    <div style={{ fontSize: '14px', color: 'var(--text-tertiary)', marginBottom: '24px', fontWeight: 600 }}>(₹99 IN)</div>
+                                    <Button variant="primary" style={{ width: '100%', borderRadius: '10px', pointerEvents: 'none', padding: '10px' }}>I want this!</Button>
+                                </div>
+                                
+                                <div 
+                                    style={{ display: 'flex', flexDirection: 'column', border: '2px solid var(--primary)', borderRadius: '16px', padding: '24px', textAlign: 'center', cursor: 'pointer', position: 'relative', background: 'rgba(var(--primary-rgb), 0.05)' }}
+                                    onClick={() => handleWtpClick('unlimited_sprint', '$9')}
+                                >
+                                    <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, whiteSpace: 'nowrap' }}>🔥 Most Popular</div>
+                                    <h4 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>Weekly Sprint</h4>
+                                    <p style={{ flex: 1, fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>Unlimited prep for 7 Days</p>
+                                    <div style={{ fontSize: '32px', fontWeight: 900, marginBottom: '4px', color: 'var(--primary)' }}>$9</div>
+                                    <div style={{ fontSize: '14px', color: 'var(--primary)', marginBottom: '24px', fontWeight: 600, opacity: 0.8 }}>(₹299 IN)</div>
+                                    <Button variant="primary" style={{ width: '100%', borderRadius: '10px', pointerEvents: 'none', padding: '10px' }}>I want this!</Button>
+                                </div>
+                            </div>
+                        </Card>
+                    </div>
+                )}
             </div>
         </div>
     );

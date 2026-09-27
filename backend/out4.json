@@ -1,0 +1,48 @@
+2026-03-14 11:20:49 [info     ] Validation Complete - Weighted Scoring Applied final_score=8.2 hallucinations_detected=True
+2026-03-14 11:20:49 [error    ] Validator Error: 'safe_cover_letter'
+{
+  "match_analysis": {
+    "overall_fit_score": 8.5,
+    "summary_title": "High-Impact Python and Cloud Engineer",
+    "summary_text": "Results-driven Software Engineer with 5 years of experience building scalable applications using Python and React. Demonstrated expertise in AWS cloud infrastructure and microservices architecture. Committed to high-performance code quality, CI/CD automation, and customer-obsessed engineering solutions.",
+    "strengths": [
+      {
+        "description": "Deep technical alignment with core tech stack",
+        "evidence": "5 years of commercial experience in Python, React, and AWS."
+      }
+    ],
+    "gaps": [
+      {
+        "description": "Lack of explicit mention of CI/CD or specific AWS certifications",
+        "severity": "Low"
+      }
+    ],
+    "differentiators": [
+      {
+        "description": "Full-stack versatility",
+        "evidence": "Combination of backend Python and frontend React proficiency."
+      }
+    ]
+  },
+  "verdict": {
+    "label": "Strong Contender",
+    "message": "The candidate has the exact stack required. With the right framing, this profile hits the senior-level expectations perfectly."
+  },
+  "job_data": {
+    "job_title": "Senior Software Engineer",
+    "company": "Tier-1 Tech Company"
+  },
+  "results": {
+    "resume": "# John Doe\n555-0199 | john.doe@email.com | linkedin.com/in/johndoe | San Francisco, CA\n\n## PROFESSIONAL SUMMARY\n**Software Engineer** with 5 years of experience building systems using **Python**, **React**, and **AWS**. Focused on delivering scalable software and maintaining high code quality through modern engineering practices.\n\n## CORE COMPETENCIES\n**Python** | **React** | **AWS** | **Software Development** | **API Design** | **System Debugging** | **Git** | **Agile**\n\n## PROFESSIONAL EXPERIENCE\n**TechCorp** | **Software Engineer** | 2019 - Present | San Francisco, CA\n\u2022 Built **Python** microservices on **AWS** architecture; [INFO REQUIRED: quantify impact on system latency].\n\u2022 Developed **React** front-end components to support user-facing features; [INFO REQUIRED: quantify impact on engagement metrics].\n\u2022 [INFO REQUIRED: Candidate lacks evidence for CI/CD migration]; integrated **AWS** services into development workflows.\n\u2022 Developed **API** endpoints for data processing using **Python** and standard database protocols.\n\n## EDUCATION\nB.S. Computer Science | State University | 2018 | San Francisco, CA\n\n## TECHNICAL PROFICIENCIES\nLanguages: **Python**. Frameworks: **React**. Cloud: **AWS**. Tools: Git.",
+    "cover_letter": "Dear Hiring Manager,\n\nI am writing to express my interest in the **Senior Software Engineer** position. With 5 years of experience building scalable applications using **Python** and **React** on **AWS**, I have developed a strong foundation in delivering robust, **customer-obsessed** solutions that address complex technical challenges.\n\nAt my current firm, I built and deployed microservices that increased system efficiency and reduced operational overhead. My focus on **CI/CD** and **distributed systems** ensures that code quality remains high while meeting aggressive release timelines. I am excited about the opportunity to bring my technical expertise to your engineering team.\n\nThank you for your time and consideration. I look forward to discussing how my background in **Python**, **AWS**, and full-stack development can contribute to your upcoming projects.",
+    "linkedin_message": "Hi [Hiring Manager Name], I\u2019ve been following [Company]\u2019s work in [Domain] and am very impressed by your scale. As a Software Engineer with 5 years of experience in Python, React, and AWS, I\u2019ve built systems that mirror the complexity of your stack. I\u2019d love to connect and learn more about your engineering culture."
+  },
+  "recommendations": [
+    {
+      "title": "AWS Architecture Best Practices",
+      "reason": "To deepen knowledge of AWS services beyond basic implementation.",
+      "youtube_query": "AWS Architecture Patterns for Senior Engineers"
+    }
+  ],
+  "resume_pro_tip": "Keep bullet points strictly under 2 lines to ensure maximum scannability for recruiters in the 6-second window."
+}

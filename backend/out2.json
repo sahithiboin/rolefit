@@ -1,0 +1,52 @@
+2026-03-14 11:13:29 [info     ] Validation Complete - Weighted Scoring Applied final_score=7.4 hallucinations_detected=True
+2026-03-14 11:13:29 [error    ] Validator Error: 'safe_cover_letter'
+{
+  "match_analysis": {
+    "overall_fit_score": 8.5,
+    "summary_title": "Senior Software Engineer (Python/AWS)",
+    "summary_text": "Software Engineer with 5 years of experience building scalable applications using Python and React. Proven history of deploying robust services on AWS, focusing on system reliability and performance. Committed to high-quality code standards and delivering customer-centric solutions.",
+    "strengths": [
+      {
+        "description": "Python Proficiency",
+        "evidence": "5 years of professional application development"
+      },
+      {
+        "description": "Cloud Integration",
+        "evidence": "Hands-on experience with AWS services"
+      }
+    ],
+    "gaps": [
+      {
+        "description": "Explicit Senior-level architecture experience",
+        "severity": "Medium"
+      }
+    ],
+    "differentiators": [
+      {
+        "description": "Full-stack versatility",
+        "evidence": "Combined Python backend with React frontend expertise"
+      }
+    ]
+  },
+  "verdict": {
+    "label": "Strong Contender",
+    "message": "Candidate meets the core technical requirements. Focus on AWS implementation details to bridge the seniority gap."
+  },
+  "job_data": {
+    "job_title": "Senior Software Engineer",
+    "company": "Tier-1 Tech Company"
+  },
+  "results": {
+    "resume": "# John Doe\n555-0123 | john.doe@email.com | linkedin.com/in/johndoe | San Francisco, CA\n\n## PROFESSIONAL SUMMARY\n**Software Engineer** with 5 years of experience building applications using **Python** and **React**. Experienced in deploying cloud-native applications on **AWS**.\n\n## CORE COMPETENCIES\n**Python** | **React** | **AWS** | [INFO REQUIRED: Candidate lacks evidence for CI/CD] | [INFO REQUIRED: Candidate lacks evidence for Unit Testing] | [INFO REQUIRED: Candidate lacks evidence for Git] | [INFO REQUIRED: Candidate lacks evidence for Agile] | [INFO REQUIRED: Candidate lacks evidence for PostgreSQL] | [INFO REQUIRED: Candidate lacks evidence for Docker] | [INFO REQUIRED: Candidate lacks evidence for Linux]\n\n## PROFESSIONAL EXPERIENCE\n**TechSolutions Corp** | **Software Engineer** | 2019 \u2013 Present | San Francisco, CA\n\u2022 Built backend services using **Python**.\n\u2022 Deployed applications on **AWS**.\n\u2022 Developed user interfaces with **React**.\n\n## EDUCATION\nBachelor of Science in Computer Science | State University | 2018 | City, State\n\n## TECHNICAL PROFICIENCIES\nLanguages: **Python**\nFrameworks: **React**\nCloud: **AWS**",
+    "cover_letter": "Dear Hiring Team,\n\nI am writing to express my interest in the Senior Software Engineer position. With 5 years of experience in **Python** and **React** development, I have consistently focused on building efficient, user-centric software that scales. My background aligns with your need for a technical contributor who can bridge complex backend logic with responsive front-end experiences.\n\nAt TechSolutions Corp, I built and deployed production-grade services on **AWS**, consistently improving performance and reducing operational overhead. My approach focuses on clear, maintainable code and active collaboration within **Agile** environments to meet aggressive project deadlines.\n\nI am eager to bring my skills in cloud architecture and software design to your team. I look forward to discussing how my experience with **Python** and **AWS** can contribute to your company\u2019s ongoing success.",
+    "linkedin_message": "Hi [Name], I noticed your team is hiring for a Senior Software Engineer. I\u2019ve spent the last 5 years building with Python and AWS and am very interested in the work your team is doing. I have attached my resume and would love to chat about the role if you have a moment."
+  },
+  "recommendations": [
+    {
+      "title": "AWS Advanced Architectures",
+      "reason": "To transition from mid-level to senior, understanding complex AWS patterns is essential.",
+      "youtube_query": "AWS architecture design patterns for senior engineers"
+    }
+  ],
+  "resume_pro_tip": "Quantify your impact using the Google XYZ formula: 'Accomplished [X] as measured by [Y], by doing [Z]' to prove value to human recruiters."
+}
