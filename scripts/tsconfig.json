@@ -4,7 +4,7 @@
     "strict": true, "noEmit": true, "skipLibCheck": true,
     "allowJs": true, "checkJs": false, "types": ["node"]
   },
-  "include": ["jobScout*.ts", "syncToSheets*.ts"],
+  "include": ["jobScout*.ts", "syncToSheets*.ts", "saveLinkedInSession.ts"],
   "ts-node": {
     "transpileOnly": true,
     "moduleTypes": { "syncToSheets.ts": "cjs" },

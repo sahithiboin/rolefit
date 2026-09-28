@@ -2,8 +2,22 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import { classifyCompany, excludedCompany, recent, targetLocation, targetRole, eligible, getJobKey, canonicalUrl, USER_ID, ROLES, type Job } from './jobScoutCore.js';
-import { EXTRACT_PAGE, jobFromPage, listingLinks, searches, deadLink, verifyApplyUrl, type PageData } from './jobScoutBrowser.js';
+import {
+  EXTRACT_PAGE,
+  MAC_CHROME_USER_AGENT,
+  SourceBlocked,
+  createScoutContext,
+  discoverListings,
+  fallbackSearches,
+  jobFromPage,
+  listingLinks,
+  searches,
+  deadLink,
+  verifyApplyUrl,
+  type PageData,
+} from './jobScoutBrowser.js';
 import { ingest, ingestionPayload, jobKey } from './jobScout.js';
+import { SUSHMITA_USER_ID, rolesFromProfile } from './jobScoutConfig.js';
 
 const now = Date.parse('2026-09-11T12:00:00Z');
 const candidate = (overrides: Partial<Job> = {}): Job => ({
@@ -78,12 +92,24 @@ test('ingestion payload and returned threshold are authoritative', async () => {
   assert.equal(attempts, 1);
 });
 
+test('active user context can switch ingestion and role matching for Sushmita', async () => {
+  const profile = { full_name: 'Sushmita Allumolu' };
+  assert.equal(ingestionPayload(candidate(), profile, SUSHMITA_USER_ID).userId, SUSHMITA_USER_ID);
+  assert.notEqual(jobKey(candidate(), SUSHMITA_USER_ID), jobKey(candidate(), USER_ID));
+  const roles = rolesFromProfile({ targetProfiles: ['Sales Excellence Manager', 'Customer Operations Lead'] }, SUSHMITA_USER_ID);
+  assert.equal(targetRole('Senior Sales Excellence Manager', roles), true);
+  assert.equal(targetRole('Customer Operations Lead', roles), true);
+  assert.equal(targetRole('Software Engineer', roles), false);
+});
+
 test('search plan covers all requested boards and locations plus hiring posts', () => {
   const plan = searches(1);
   for (const source of ['linkedin', 'naukri', 'wellfound', 'linkedin-posts', 'indeed', 'glassdoor']) assert.ok(plan.some(search => search.source === source));
   assert.ok(plan.some(search => search.url.includes('f_WT=2')));
   assert.ok(plan.some(search => search.url.includes('hyderabad')));
   assert.ok(plan.some(search => search.url.includes('canada')));
+  assert.ok(plan.some(search => search.source === 'glassdoor' && search.url.includes('glassdoor.ca')));
+  assert.ok(plan.some(search => search.source === 'glassdoor' && search.url.includes('glassdoor.co.in')));
 });
 
 test('public post discovery decodes observed Bing redirects without trusting their dates', () => {
@@ -91,6 +117,70 @@ test('public post discovery decodes observed Bing redirects without trusting the
   const links = listingLinks({ links: [{ url: `https://www.bing.com/ck/a?u=a1${Buffer.from(url).toString('base64')}`, title: 'Hiring', company: '', location: '', date: '' }] } as PageData, 'linkedin-posts');
   assert.equal(links[0].url, url);
   assert.equal(links[0].date, '');
+});
+
+test('Indeed and Glassdoor browser context uses the requested Chrome-like profile', async () => {
+  let initScript = '';
+  let contextOptions: Record<string, any> = {};
+  const browser = {
+    async newContext(options: Record<string, any>) {
+      contextOptions = options;
+      return {
+        async addInitScript(fn: Function) {
+          initScript = fn.toString();
+        },
+      };
+    },
+  };
+  await createScoutContext(browser as any);
+  assert.equal(contextOptions.userAgent, MAC_CHROME_USER_AGENT);
+  assert.equal(contextOptions.locale, 'en-US');
+  assert.deepEqual(contextOptions.extraHTTPHeaders, {
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Sec-Ch-Ua': '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
+    'Sec-Ch-Ua-Mobile': '?0',
+    'Sec-Ch-Ua-Platform': '"macOS"',
+  });
+  assert.match(initScript, /navigator/);
+  assert.match(initScript, /webdriver/);
+  assert.match(initScript, /false/);
+});
+
+test('Indeed and Glassdoor 403 searches fall back through dorked search result links', async () => {
+  const search = { source: 'indeed' as const, url: 'https://ca.indeed.com/jobs?q=Technical+Program+Manager&l=Canada&fromage=30' };
+  assert.deepEqual(fallbackSearches(search), [
+    'https://www.bing.com/search?q=site%3Aindeed.com%2Fviewjob+%22Technical+Program+Manager%22+%22Canada%22&filters=ex1%3A%22ez3%22',
+    'https://www.google.com/search?q=site%3Aindeed.com%2Fviewjob+%22Technical+Program+Manager%22+%22Canada%22&tbs=qdr%3Am',
+  ]);
+
+  const destination = 'https://ca.indeed.com/viewjob?jk=abc123';
+  const events: Record<string, unknown>[] = [];
+  const seenUrls: string[] = [];
+  const links = await discoverListings({} as any, search, 0, {
+    report: event => events.push(event),
+    read: async (_page, url) => {
+      seenUrls.push(url);
+      if (url.includes('indeed.com/jobs')) throw new SourceBlocked('HTTP 403', 403);
+      return {
+        links: [{ url: `https://www.google.com/url?q=${encodeURIComponent(destination)}`, title: 'Technical Program Manager', company: 'AMD', location: 'Canada', date: '3 days ago' }],
+      } as PageData;
+    },
+  });
+  assert.deepEqual(seenUrls, [search.url, ...fallbackSearches(search).slice(0, 1)]);
+  assert.equal(events[0].status, 'direct-blocked');
+  assert.equal(events[1].status, 'fallback-discovered');
+  assert.equal(links[0].url, destination);
+});
+
+test('fallback is limited to direct 403 responses on Indeed and Glassdoor', async () => {
+  const search = { source: 'glassdoor' as const, url: 'https://www.glassdoor.com/Job/jobs.htm?keyword=Technical+Product+Manager&location=Hyderabad&fromAge=30' };
+  await assert.rejects(discoverListings({} as any, search, 0, {
+    read: async () => { throw new SourceBlocked('HTTP 429', 429); },
+  }), /HTTP 429/);
+  await assert.rejects(discoverListings({} as any, { ...search, source: 'linkedin' as const }, 0, {
+    read: async () => { throw new SourceBlocked('HTTP 403', 403); },
+  }), /HTTP 403/);
 });
 
 test('local Playwright extracts public cards and structured JD with remote eligibility', async () => {

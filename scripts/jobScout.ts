@@ -1,14 +1,14 @@
 import { chromium } from 'playwright';
 import { Firestore } from '@google-cloud/firestore';
-import { parse as parseEnv } from 'dotenv';
-import { mkdir, readFile, writeFile, rename, open, unlink } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, rename, open, unlink, access } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { parseArgs } from 'node:util';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { transformProfileForBackend } from '../src/lib/api.js';
-import { USER_ID, getJobKey, canonicalUrl, classifyCompany, eligible, excludedCompany, newCounters, summary, type Job, type Source, type Counters } from './jobScoutCore.js';
+import { getJobKey, canonicalUrl, classifyCompany, eligible, excludedCompany, newCounters, summary, type Job, type Source, type Counters } from './jobScoutCore.js';
 import { searches, readPage, listingLinks, jobFromPage, hiringPostJobs, companyEvidence, createScoutContext, discoverListings, verifyApplyUrl, deadLink, SourceBlocked } from './jobScoutBrowser.js';
+import { DEFAULT_USER_ID, fallbackLinkedInStatePath, readScoutConfig, rolesFromProfile, type ScoutConfig } from './jobScoutConfig.js';
 
 import { loadExistingJobKeys, main as syncToSheets } from './syncToSheets.js';
 
@@ -19,21 +19,7 @@ type Receipt = { status: 'pending' | 'ingested' | 'below' | 'failed'; at: string
 type Journal = Record<string, Receipt>;
 
 export async function loadEnvironment(root = ROOT): Promise<string> {
-  const read = async (path: string) => {
-    try { return parseEnv(await readFile(path)); }
-    catch (error: any) { if (error.code === 'ENOENT') return {}; throw error; }
-  };
-  const frontend = await read(resolve(root, '.env'));
-  const backend = await read(resolve(root, 'backend/.env'));
-  for (const [key, value] of Object.entries({ ...frontend, ...backend })) {
-    if (process.env[key] === undefined) process.env[key] = value;
-  }
-  const project = process.env.FIRESTORE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID;
-  if (!project) throw new Error('Set FIRESTORE_PROJECT_ID and VITE_FIREBASE_PROJECT_ID to the same Firebase project.');
-  if (frontend.VITE_FIREBASE_PROJECT_ID && project !== frontend.VITE_FIREBASE_PROJECT_ID) {
-    throw new Error('Backend/scout project differs from root .env VITE_FIREBASE_PROJECT_ID.');
-  }
-  return project;
+  return (await readScoutConfig(root)).projectId;
 }
 
 export function validateProfile(profile: Profile): Profile {
@@ -44,31 +30,56 @@ export function validateProfile(profile: Profile): Profile {
   return profile;
 }
 
-export async function loadProfile(project: string, profileFile?: string): Promise<Profile> {
-  if (profileFile) return validateProfile(JSON.parse(await readFile(resolve(profileFile), 'utf8')));
+function backendProfileFromDoc(data: Record<string, any> | undefined): { profile: Profile; raw: Record<string, any> } | null {
+  if (!data) return null;
+  if (data.profile) return { profile: transformProfileForBackend(data.profile), raw: data.profile };
+  if (typeof data.full_name === 'string') return { profile: data, raw: data };
+  return null;
+}
+
+async function readLocalProfile(userId: string, profileFile?: string): Promise<{ profile: Profile; raw: Record<string, any>; source: string }> {
+  const path = profileFile ? resolve(profileFile) : resolve(ROOT, 'profiles', `${userId}.json`);
+  const profile = JSON.parse(await readFile(path, 'utf8'));
+  return { profile: validateProfile(profile), raw: profile, source: path };
+}
+
+export async function loadProfile(project: string, userId = DEFAULT_USER_ID, profileFile?: string): Promise<{ profile: Profile; raw: Record<string, any>; source: string }> {
   const db = new Firestore({ projectId: project });
   try {
-    const doc = await db.collection('profiles').doc(USER_ID).get();
-    const form = doc.data()?.profile;
-    if (!doc.exists || !form) throw new Error(`No profile at profiles/${USER_ID}. Save your profile in Builder first.`);
-    // Reuse the exact UI mapping (including its one-year-per-experience-entry estimate).
-    return validateProfile(transformProfileForBackend(form));
+    for (const collection of ['users', 'profiles']) {
+      const doc = await db.collection(collection).doc(userId).get();
+      const loaded = backendProfileFromDoc(doc.data());
+      if (doc.exists && loaded) {
+        return { profile: validateProfile(loaded.profile), raw: loaded.raw, source: `${collection}/${userId}` };
+      }
+    }
+    throw new Error(`No live profile at users/${userId} or profiles/${userId}.`);
+  } catch (error) {
+    try {
+      const fallback = await readLocalProfile(userId, profileFile);
+      console.warn(`Live Firestore profile unavailable for ${userId}; using local fallback ${fallback.source}.`);
+      return fallback;
+    } catch {
+      throw error;
+    }
   } finally { await db.terminate(); }
 }
 
-export function ingestionPayload(job: Job, profile: Profile) {
+export function ingestionPayload(job: Job, profile: Profile, userId = DEFAULT_USER_ID) {
   return {
-    userId: USER_ID, userProfile: profile,
+    userId, userProfile: profile,
     jobData: { title: job.title, company: job.company, location: job.location, applyUrl: job.url },
     jdText: job.jdText,
   };
 }
 
-export async function ingest(job: Job, profile: Profile, send: typeof fetch = fetch): Promise<Receipt> {
+export async function ingest(job: Job, profile: Profile, userIdOrSend: string | typeof fetch = DEFAULT_USER_ID, maybeSend: typeof fetch = fetch): Promise<Receipt> {
+  const userId = typeof userIdOrSend === 'string' ? userIdOrSend : DEFAULT_USER_ID;
+  const send = typeof userIdOrSend === 'function' ? userIdOrSend : maybeSend;
   // No POST retries: a timeout can occur after Firestore has committed.
   const response = await send(ENDPOINT, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(ingestionPayload(job, profile)), signal: AbortSignal.timeout(600_000),
+    body: JSON.stringify(ingestionPayload(job, profile, userId)), signal: AbortSignal.timeout(600_000),
   });
   if (!response.ok) throw new Error(`Ingestion HTTP ${response.status}; inspect backend logs before retrying.`);
   const result = await response.json() as Record<string, any>;
@@ -84,13 +95,25 @@ export async function ingest(job: Job, profile: Profile, send: typeof fetch = fe
   throw new Error('Unexpected ingestion response; inspect tracker before retrying.');
 }
 
-export function jobKey(job: Job): string {
-  return createHash('sha256').update(`${USER_ID}\n${canonicalUrl(job.url)}\n${job.jdText}`).digest('hex');
+export function jobKey(job: Job, userId = DEFAULT_USER_ID): string {
+  return createHash('sha256').update(`${userId}\n${canonicalUrl(job.url)}\n${job.jdText}`).digest('hex');
 }
 
 async function saveJson(path: string, value: unknown) {
   await writeFile(`${path}.tmp`, JSON.stringify(value, null, 2), { mode: 0o600 });
   await rename(`${path}.tmp`, path);
+}
+
+async function fileExists(path: string) {
+  try { await access(path); return true; }
+  catch { return false; }
+}
+
+async function resolveLinkedInStorageState(config: ScoutConfig) {
+  if (await fileExists(config.linkedinStatePath)) return config.linkedinStatePath;
+  const fallback = fallbackLinkedInStatePath(ROOT);
+  if (await fileExists(fallback)) return fallback;
+  return undefined;
 }
 
 export async function main(args = process.argv.slice(2)) {
@@ -113,8 +136,6 @@ export async function main(args = process.argv.slice(2)) {
   };
   const sourceNames = values.sources!.split(',') as Source[];
   if (sourceNames.some(s => !['linkedin', 'naukri', 'wellfound', 'linkedin-posts', 'indeed', 'glassdoor'].includes(s))) throw new Error('Unknown source.');
-  const plan = searches(integer(values.pages, 1)).filter(s => sourceNames.includes(s.source));
-  const maxSearches = integer(values['max-searches'], plan.length);
   const maxListings = integer(values['max-listings'], 20);
   const delayMs = integer(values['delay-ms'], 1200, 250);
   const stateDir = resolve(ROOT, '.job-scout');
@@ -128,22 +149,28 @@ export async function main(args = process.argv.slice(2)) {
   let browser;
   let heartbeat;
   try {
-    const project = await loadEnvironment();
+    const config = await readScoutConfig(ROOT);
+    const { projectId: project, activeUserId } = config;
     // Persistent duplicate checks are required even in dry runs; no writes occur.
-    const existingKeys = await loadExistingJobKeys();
+    const existingKeys = await loadExistingJobKeys(activeUserId);
     console.log(`Loaded ${existingKeys.size} existing company/title keys from Firestore and Sheets.`);
-    const profile = values['dry-run'] ? null : await loadProfile(project, values['profile-json']);
+    const loadedProfile = await loadProfile(project, activeUserId, values['profile-json']);
+    const searchRoles = rolesFromProfile(loadedProfile.raw, activeUserId);
+    const plan = searches(integer(values.pages, 1), searchRoles).filter(s => sourceNames.includes(s.source));
+    const maxSearches = integer(values['max-searches'], plan.length);
+    console.log(`Active user: ${activeUserId}; profile loaded from ${loadedProfile.source}; searching ${searchRoles.length} role profiles.`);
+    const profile = values['dry-run'] ? null : loadedProfile.profile;
     if (profile) {
       const health = await fetch('http://localhost:8000/api/health', { signal: AbortSignal.timeout(5000) });
       if (!health.ok) throw new Error('Local backend health check failed.');
-      console.log(`Profile loaded from ${values['profile-json'] ? 'local file' : `profiles/${USER_ID}`} in ${project}.`);
     }
-    const journalPath = resolve(stateDir, 'state.json');
+    const journalPath = resolve(stateDir, `state_${activeUserId}.json`);
     let journal: Journal = {};
     try { journal = JSON.parse(await readFile(journalPath, 'utf8')); }
     catch (error: any) { if (error.code !== 'ENOENT') throw error; }
     browser = await chromium.launch({ headless: !values.headed, channel: values.channel });
-    const context = await createScoutContext(browser);
+    const storageState = await resolveLinkedInStorageState(config);
+    const context = await createScoutContext(browser, storageState ? { storageState } : {});
     const page = await context.newPage();
     const detail = await context.newPage();
     const blocked = new Set<string>();
@@ -164,9 +191,9 @@ export async function main(args = process.argv.slice(2)) {
       }
       if (identity) seen.add(identity);
       if (excludedCompany(job.company)) { counters.service++; record.outcome = 'excluded-service'; return; }
-      const rejection = eligible(job);
+      const rejection = eligible(job, Date.now(), searchRoles);
       if (rejection) { counters.other++; record.outcome = rejection; return; }
-      const key = jobKey(job);
+      const key = jobKey(job, activeUserId);
       record.receiptKey = key;
       // URL also deduplicates the same job discovered through posts and listings.
       if (seen.has(canonicalUrl(job.url)) || journal[key]) { counters.duplicate++; record.outcome = 'duplicate/previous attempt'; return; }
@@ -190,7 +217,7 @@ export async function main(args = process.argv.slice(2)) {
       await saveJson(journalPath, journal);
       counters.sent++;
       try {
-        const receipt = await ingest(job, profile);
+        const receipt = await ingest(job, profile, activeUserId);
         journal[key] = receipt;
         Object.assign(record, receipt);
         if (receipt.status === 'ingested') counters.ingested++;

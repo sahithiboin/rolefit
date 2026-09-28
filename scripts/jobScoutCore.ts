@@ -1,10 +1,6 @@
 export { getJobKey } from './jobIdentity.cjs';
-export const USER_ID = 'UKiZh8nZRSbZ8RIhgu6rWc3D7Fm2';
+export { DEFAULT_USER_ID as USER_ID, DEFAULT_ROLES as ROLES } from './jobScoutConfig.js';
 export const LOCATIONS = ['Canada', 'Remote - Canada', 'Hyderabad, India', 'Remote - India'];
-export const ROLES = [
-  'Technical Program Manager', 'Technical Product Manager', 'Technical Project Manager',
-  'AI Product Manager', 'Data PM', 'Data Program Manager', 'PMO Lead', 'Delivery Lead',
-];
 export type Source = 'linkedin' | 'naukri' | 'wellfound' | 'linkedin-posts' | 'indeed' | 'glassdoor';
 export type Evidence = { url: string; text: string };
 export type Job = {
@@ -62,9 +58,14 @@ export function classifyCompany(job: Job): Classification | null {
   return null;
 }
 
-export function targetRole(title: string): boolean {
+export function targetRole(title: string, roles = [
+  'Technical Program Manager', 'Technical Product Manager', 'Technical Project Manager',
+  'AI Product Manager', 'Data PM', 'Data Program Manager', 'PMO Lead', 'Delivery Lead',
+]): boolean {
   if (/\b(?:software|frontend|backend|full[ -]?stack|qa|test)\s+(?:engineer|developer)|\bengineering manager\b/i.test(title)) return false;
-  return /\b(?:technical\s+(?:program|product|project)\s+manager|TPM|(?:AI|artificial intelligence)\s+product\s+manager|data\s+(?:PM|product manager|program manager)|PMO\s+lead|delivery\s+lead)\b/i.test(title);
+  const escaped = roles.map(role => role.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\ /g, '\\s+'));
+  const configured = escaped.length ? new RegExp(`\\b(?:${escaped.join('|')})\\b`, 'i').test(title) : false;
+  return configured || /\b(?:technical\s+(?:program|product|project)\s+manager|TPM|(?:AI|artificial intelligence)\s+product\s+manager|data\s+(?:PM|product manager|program manager)|PMO\s+lead|delivery\s+lead)\b/i.test(title);
 }
 
 export function targetLocation(location: string): boolean {
@@ -102,8 +103,8 @@ export function canonicalUrl(raw: string): string {
   return url.toString();
 }
 
-export function eligible(job: Job, now = Date.now()): string | null {
-  if (!targetRole(job.title)) return 'role';
+export function eligible(job: Job, now = Date.now(), roles?: string[]): string | null {
+  if (!targetRole(job.title, roles)) return 'role';
   if (!targetLocation(job.location)) return 'location';
   // A linked listing must still be <=24h old even when discovered through a <=48h post.
   if (!recent(job.postedAt, ['indeed', 'glassdoor'].includes(job.source) ? 30 * 24 : 24, now)) return 'age/unknown date';

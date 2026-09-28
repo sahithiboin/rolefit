@@ -90,6 +90,53 @@ VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
 > [!IMPORTANT]  
 > These values can be found in your Firebase Project Settings under "General" -> "Your apps".
 
+### 3. Job Scout Multi-User Setup (`.env.local`)
+
+Job Scout reads the active user and target Sheet at runtime, so each operator can run the same repo without editing code. Create a project-root `.env.local` file on the machine that will run the scout:
+
+```env
+# Sahithi default:
+ACTIVE_USER_ID=UKiZh8nZRSbZ8RIhgu6rWc3D7Fm2
+GOOGLE_SHEET_ID=1NnSvMimPpmrqrr6AZ1Aw1ikBLXRot7cMxUh1DYrMhMk
+GOOGLE_SHEET_TAB_NAME=Sahithi
+
+# Sushmita Allumolu:
+# ACTIVE_USER_ID=YKJYN0RCB8Uww9c3n3ZNwEa8xc63
+# GOOGLE_SHEET_ID=1NnSvMimPpmrqrr6AZ1Aw1ikBLXRot7cMxUh1DYrMhMk
+# GOOGLE_SHEET_TAB_NAME=Sushmita
+
+# Optional: override LinkedIn storage state.
+# LINKEDIN_STATE_PATH=.auth/linkedinState_YKJYN0RCB8Uww9c3n3ZNwEa8xc63.json
+```
+
+For Sushmita, use:
+
+```env
+ACTIVE_USER_ID=YKJYN0RCB8Uww9c3n3ZNwEa8xc63
+GOOGLE_SHEET_ID=1NnSvMimPpmrqrr6AZ1Aw1ikBLXRot7cMxUh1DYrMhMk
+GOOGLE_SHEET_TAB_NAME=Sushmita
+```
+
+Keep her RoleFit Builder profile up to date in the web app. Each `npm run job-scout` run fetches the latest Firestore profile from `users/<ACTIVE_USER_ID>` or `profiles/<ACTIVE_USER_ID>` before evaluating jobs, then falls back to `profiles/<ACTIVE_USER_ID>.json` only if Firestore is unavailable. Sheet rows go to the tab named by `GOOGLE_SHEET_TAB_NAME`; if it is missing, `npm run sync-sheets` creates it and writes the standard eight headers.
+
+Save the user-specific LinkedIn browser session once per machine:
+
+```bash
+npm run save-linkedin-session
+```
+
+This writes `.auth/linkedinState_<ACTIVE_USER_ID>.json`, falling back to `.auth/linkedinState.json` if a user-specific file is not present. Then run the scout:
+
+```bash
+npm run job-scout
+```
+
+To refresh a local checkout before running:
+
+```bash
+npm run update
+```
+
 ---
 
 ## 🐳 Docker Deployment

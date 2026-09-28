@@ -1,0 +1,66 @@
+{
+  "full_name": "Sushmita Allumolu",
+  "linkedin_url": "https://www.linkedin.com/in/sushmita-allumolu-117b18197/",
+  "skills": [
+    "Sales excellence",
+    "Trade promotion management",
+    "Sales operations",
+    "Process improvement",
+    "Python automation",
+    "Power BI",
+    "Advanced Excel",
+    "SAP S/4 HANA",
+    "Salesforce",
+    "Amazon QuickSight",
+    "Audit operations",
+    "Defect elimination",
+    "Forecasting",
+    "Order management metrics",
+    "Cross-functional stakeholder management",
+    "ACES Certified"
+  ],
+  "experience": [
+    {
+      "company": "PepsiCo",
+      "role": "Sales Deputy Manager - NA & UK",
+      "description": "Led sales excellence and operations initiatives across NA and UK markets, including PGT SAP S/4 HANA transition support, TPM process automation using Python, Salesforce CMA agreement workflows, forecasting and OMS metrics, and a $30M Houchens integration."
+    },
+    {
+      "company": "Amazon",
+      "role": "CS Audit Analyst",
+      "description": "Drove defect elimination, process audits, concession abuse loss reduction, cross-functional stakeholder management, and audit improvements contributing to INR 128M in savings."
+    }
+  ],
+  "education": [],
+  "certifications": [
+    {
+      "name": "ACES Certified",
+      "issuer": "Amazon"
+    }
+  ],
+  "projects": [
+    {
+      "name": "TPM Automation",
+      "description": "Built Python automation supporting trade promotion management processes and sales operations reporting."
+    },
+    {
+      "name": "PGT SAP S/4 HANA Transition",
+      "description": "Supported process transition and sales operations readiness for PepsiCo's PGT SAP S/4 HANA transformation."
+    }
+  ],
+  "awards": [],
+  "languages": [],
+  "additional_info": "Target profiles: Sales Excellence Manager, Trade Promotion Management (TPM) Lead, Sales Operations Lead, Process Improvement / Automation Lead, Customer Operations / Audit Lead, Program Manager.",
+  "targetProfiles": [
+    "Sales Excellence Manager",
+    "Trade Promotion Management Lead",
+    "TPM Lead",
+    "Sales Operations Lead",
+    "Process Improvement Lead",
+    "Automation Lead",
+    "Customer Operations Lead",
+    "Audit Lead",
+    "Program Manager"
+  ],
+  "total_years_experience": 0
+}

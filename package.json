@@ -8,10 +8,12 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "update": "git checkout develop && git pull origin develop && npm install",
     "job-scout": "node --import tsx scripts/jobScout.ts",
+    "save-linkedin-session": "node --import tsx scripts/saveLinkedInSession.ts",
     "job-scout:test": "node --import tsx --test scripts/jobScout.test.ts",
     "job-scout:typecheck": "tsc -p scripts/tsconfig.json",
-    "sync-sheets": "ts-node scripts/syncToSheets.ts",
+    "sync-sheets": "node --import tsx scripts/syncToSheets.ts",
     "sync-sheets:test": "node --import tsx --test scripts/syncToSheets.test.ts"
   },
   "dependencies": {

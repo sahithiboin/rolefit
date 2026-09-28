@@ -2,13 +2,13 @@ import { getJobKey } from './jobIdentity.cjs';
 import { Firestore, FieldValue, Timestamp } from '@google-cloud/firestore';
 import { GoogleAuth } from 'google-auth-library';
 import { sheets, type sheets_v4 } from 'googleapis/build/src/apis/sheets/index.js';
-import { parse as parseEnv } from 'dotenv';
-import { readFile, access } from 'node:fs/promises';
+import { access } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { parseArgs } from 'node:util';
+import { DEFAULT_USER_ID, activeUserId, readScoutConfig } from './jobScoutConfig.js';
 
-export const SHEETS_USER_ID = 'UKiZh8nZRSbZ8RIhgu6rWc3D7Fm2';
+export const SHEETS_USER_ID = DEFAULT_USER_ID;
 export const HEADERS = ['Date Ingested', 'Job Title', 'Company', 'Location', 'Match Score', 'Apply URL', 'Key Highlights', 'Status'];
 type JobData = Record<string, any>;
 export type SavedJob = { id: string; data: JobData };
@@ -17,10 +17,19 @@ export type SyncStore = {
   markSynced(id: string): Promise<void>;
 };
 export type SyncSheet = { existingIds: Set<string>; existingKeys?: Set<string>; append(id: string, row: string[]): Promise<void> };
+type TabInspection = {
+  sheetId: number | null;
+  existingIds: Set<string>;
+  existingKeys: Set<string>;
+  empty: boolean;
+  legacy: boolean;
+  title: string;
+  missing?: boolean;
+};
 
-export function qualifying(job: JobData): boolean {
+export function qualifying(job: JobData, userId = activeUserId()): boolean {
   const score = job.matchAnalysis?.overall_fit_score;
-  return job.userId === SHEETS_USER_ID && job.status === 'Saved' && job.source === 'JobScout' &&
+  return job.userId === userId && job.status === 'Saved' && job.source === 'JobScout' &&
     typeof score === 'number' && Number.isFinite(score) && score >= 9 && score <= 10;
 }
 
@@ -105,20 +114,7 @@ export async function syncJobs(jobs: SavedJob[], store: SyncStore, sheet: SyncSh
 }
 
 export async function readConfig(root = process.cwd()) {
-  const read = async (path: string) => {
-    try { return parseEnv(await readFile(path)); }
-    catch (error: any) { if (error.code === 'ENOENT') return {}; throw error; }
-  };
-  const frontend = await read(resolve(root, '.env'));
-  const backend = await read(resolve(root, 'backend/.env'));
-  for (const [key, value] of Object.entries({ ...frontend, ...backend })) if (process.env[key] === undefined) process.env[key] = value;
-  const projectId = process.env.FIRESTORE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID;
-  if (!projectId || (frontend.VITE_FIREBASE_PROJECT_ID && frontend.VITE_FIREBASE_PROJECT_ID !== projectId)) throw new Error('Firestore project must match root .env VITE_FIREBASE_PROJECT_ID.');
-  const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
-  if (!spreadsheetId || !/^[\w-]+$/.test(spreadsheetId)) throw new Error('Set GOOGLE_SHEETS_SPREADSHEET_ID to the target spreadsheet ID.');
-  const sheetId = Number(process.env.GOOGLE_SHEETS_TAB_ID ?? '0');
-  if (!Number.isSafeInteger(sheetId) || sheetId < 0) throw new Error('GOOGLE_SHEETS_TAB_ID must be a numeric gid (default 0).');
-  return { projectId, spreadsheetId, sheetId };
+  return readScoutConfig(root);
 }
 
 const requestOptions = { timeout: 30_000, retry: false };
@@ -126,7 +122,11 @@ export async function inspectSheet(api: sheets_v4.Sheets, spreadsheetId: string,
   const metadata = await api.spreadsheets.get({ spreadsheetId, fields: 'sheets(properties(sheetId,title))' }, requestOptions);
   const tab = metadata.data.sheets?.find(sheet => sheet.properties?.sheetId === sheetId)?.properties;
   if (!tab?.title) throw new Error(`Worksheet gid=${sheetId} does not exist.`);
-  const range = `'${tab.title.replace(/'/g, "''")}'!A:H`;
+  return inspectSheetRows(api, spreadsheetId, tab.sheetId!, tab.title, prefix);
+}
+
+async function inspectSheetRows(api: sheets_v4.Sheets, spreadsheetId: string, sheetId: number, title: string, prefix: string): Promise<TabInspection> {
+  const range = `'${title.replace(/'/g, "''")}'!A:H`;
   const response = await api.spreadsheets.get({ spreadsheetId, ranges: [range], includeGridData: true,
     fields: 'sheets(data(startRow,rowData(values(userEnteredValue,formattedValue,note))))' }, requestOptions);
   const rows = response.data.sheets?.[0]?.data?.[0]?.rowData || [];
@@ -146,7 +146,36 @@ export async function inspectSheet(api: sheets_v4.Sheets, spreadsheetId: string,
   const legacyHeaders = HEADERS.map((value, index) => index === 6 ? 'Key Highlights / Fit Reason' : value);
   const legacy = JSON.stringify(headers) === JSON.stringify(legacyHeaders);
   if (hasData && !legacy && JSON.stringify(headers) !== JSON.stringify(HEADERS)) throw new Error('Target tab headers differ from the expected eight columns; existing data was not changed.');
-  return { existingIds, existingKeys, empty: !hasData, legacy, title: tab.title };
+  return { sheetId, existingIds, existingKeys, empty: !hasData, legacy, title };
+}
+
+export async function inspectSheetTab(api: sheets_v4.Sheets, spreadsheetId: string, tabName: string, prefix: string): Promise<TabInspection> {
+  const metadata = await api.spreadsheets.get({ spreadsheetId, fields: 'sheets(properties(sheetId,title))' }, requestOptions);
+  const tab = metadata.data.sheets?.find(sheet => sheet.properties?.title === tabName)?.properties;
+  if (!tab?.title || tab.sheetId === undefined || tab.sheetId === null) {
+    return { sheetId: null, existingIds: new Set(), existingKeys: new Set(), empty: true, legacy: false, title: tabName, missing: true };
+  }
+  return inspectSheetRows(api, spreadsheetId, tab.sheetId, tab.title, prefix);
+}
+
+export async function createSheetTab(api: sheets_v4.Sheets, spreadsheetId: string, tabName: string): Promise<{ sheetId: number; title: string }> {
+  const response = await api.spreadsheets.batchUpdate({ spreadsheetId, requestBody: {
+    requests: [{ addSheet: { properties: { title: tabName } } }],
+  } }, requestOptions);
+  const properties = response.data.replies?.[0]?.addSheet?.properties;
+  const sheetId = properties?.sheetId;
+  const title = properties?.title || tabName;
+  if (sheetId === undefined || sheetId === null) throw new Error(`Created worksheet ${tabName}, but Sheets did not return a gid.`);
+  return { sheetId, title };
+}
+
+export async function ensureSheetTab(api: sheets_v4.Sheets, spreadsheetId: string, tabName: string,
+  prefix: string, createMissing: boolean): Promise<TabInspection> {
+  const inspected = await inspectSheetTab(api, spreadsheetId, tabName, prefix);
+  if (!inspected.missing) return inspected;
+  if (!createMissing) return inspected;
+  const created = await createSheetTab(api, spreadsheetId, tabName);
+  return { sheetId: created.sheetId, existingIds: new Set(), existingKeys: new Set(), empty: true, legacy: false, title: created.title };
 }
 
 export async function ensureHeaders(api: sheets_v4.Sheets, spreadsheetId: string, sheetId: number,
@@ -161,15 +190,15 @@ export async function ensureHeaders(api: sheets_v4.Sheets, spreadsheetId: string
 }
 
 /** Fail closed if either persistent duplicate index cannot be read. */
-export async function loadExistingJobKeys(): Promise<Set<string>> {
-  const { projectId, spreadsheetId, sheetId } = await readConfig();
+export async function loadExistingJobKeys(userId = activeUserId()): Promise<Set<string>> {
+  const { projectId, spreadsheetId, sheetTabName } = await readConfig();
   const db = new Firestore({ projectId });
   try {
     const api = sheets({ version: 'v4', auth: new GoogleAuth({
       keyFile: 'backend/service-account.json', scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     }) });
-    const tab = await inspectSheet(api, spreadsheetId, sheetId, `RoleFit JobScout: ${projectId}/jobs/`);
-    const snapshot = await db.collection('jobs').where('userId', '==', SHEETS_USER_ID).select('company', 'title').get();
+    const tab = await ensureSheetTab(api, spreadsheetId, sheetTabName, `RoleFit JobScout: ${projectId}/jobs/`, false);
+    const snapshot = await db.collection('jobs').where('userId', '==', userId).select('company', 'title').get();
     const keys = new Set(tab.existingKeys);
     for (const doc of snapshot.docs) {
       const data = doc.data();
@@ -198,10 +227,10 @@ async function acquireLock(db: Firestore, target: string) {
 export async function main(args = process.argv.slice(2)) {
   const { values } = parseArgs({ args, options: { 'dry-run': { type: 'boolean' }, help: { type: 'boolean', short: 'h' } } });
   if (values.help) {
-    console.log('npm run sync-sheets -- [--dry-run]\nConfigure GOOGLE_SHEETS_SPREADSHEET_ID and GOOGLE_SHEETS_TAB_ID in backend/.env. Sheets uses backend/service-account.json; Firestore uses ADC.');
+    console.log('npm run sync-sheets -- [--dry-run]\nConfigure ACTIVE_USER_ID, GOOGLE_SHEET_ID and optional GOOGLE_SHEETS_TAB_ID in .env.local. Sheets uses backend/service-account.json; Firestore uses ADC.');
     return;
   }
-  const { projectId, spreadsheetId, sheetId } = await readConfig();
+  const { projectId, spreadsheetId, sheetTabName, activeUserId: userId } = await readConfig();
   try { await access(resolve('backend/service-account.json')); }
   catch { throw new Error('Missing or unreadable backend/service-account.json. Place your Sheets service-account JSON key there.'); }
   const db = new Firestore({ projectId });
@@ -210,27 +239,32 @@ export async function main(args = process.argv.slice(2)) {
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
   const api = sheets({ version: 'v4', auth });
-  const target = `${spreadsheetId}:${sheetId}`;
+  const target = `${spreadsheetId}:${sheetTabName}`;
   const prefix = `RoleFit JobScout: ${projectId}/jobs/`;
   let lock: Awaited<ReturnType<typeof acquireLock>> | undefined;
   try {
     if (!values['dry-run']) lock = await acquireLock(db, target);
-    const tab = await inspectSheet(api, spreadsheetId, sheetId, prefix);
+    const tab = await ensureSheetTab(api, spreadsheetId, sheetTabName, prefix, !values['dry-run']);
+    if (tab.missing || tab.sheetId === null) {
+      console.log(`${values['dry-run'] ? 'DRY RUN (no writes) ' : ''}Sheets sync: ${JSON.stringify({ queried: 0, duplicates: 0, eligible: 0, appended: 0, recovered: 0, skipped: 0, pending: 0, failed: 0 })}`);
+      console.log(`Target tab "${sheetTabName}" does not exist in https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`);
+      return { queried: 0, duplicates: 0, eligible: 0, appended: 0, recovered: 0, skipped: 0, pending: 0, failed: 0 };
+    }
     // Don't query isSyncedToSheet == false: that misses all legacy documents
     // where the flag has never been written.
-    const snapshot = await db.collection('jobs').where('userId', '==', SHEETS_USER_ID)
+    const snapshot = await db.collection('jobs').where('userId', '==', userId)
       .where('status', '==', 'Saved').where('source', '==', 'JobScout').get();
     const alreadySynced = (data: JobData) => data.isSyncedToSheet === true && (!data.sheetSyncTarget || data.sheetSyncTarget === target);
     const jobs = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() })).filter(job => !alreadySynced(job.data));
     if ((tab.empty || tab.legacy) && !values['dry-run']) {
       await lock!.renew();
-      await ensureHeaders(api, spreadsheetId, sheetId, tab);
+      await ensureHeaders(api, spreadsheetId, tab.sheetId, tab);
     }
     const store: SyncStore = {
       claim: id => db.runTransaction(async tx => {
         const ref = db.collection('jobs').doc(id);
         const data = (await tx.get(ref)).data();
-        if (!data || !qualifying(data)) return 'ineligible';
+        if (!data || !qualifying(data, userId)) return 'ineligible';
         if (alreadySynced(data)) return 'synced';
         if (data.sheetSyncPending?.target === target) return 'pending';
         tx.update(ref, { sheetSyncPending: { target, startedAt: FieldValue.serverTimestamp() } });
@@ -244,12 +278,12 @@ export async function main(args = process.argv.slice(2)) {
     const count = await syncJobs(jobs, store, {
       existingIds: tab.existingIds, existingKeys: tab.existingKeys,
       append: async (id, row) => {
-        await api.spreadsheets.batchUpdate({ spreadsheetId, requestBody: { requests: [appendRequest(sheetId, row, prefix + id)] } }, requestOptions);
+        await api.spreadsheets.batchUpdate({ spreadsheetId, requestBody: { requests: [appendRequest(tab.sheetId!, row, prefix + id)] } }, requestOptions);
       },
     }, { dryRun: values['dry-run'], beforeJob: lock?.renew,
       onError: (id, message) => console.error(`Job ${id}: ${message}`) });
     console.log(`${values['dry-run'] ? 'DRY RUN (no writes) ' : ''}Sheets sync: ${JSON.stringify(count)}`);
-    console.log(`Target: https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=${sheetId}`);
+    console.log(`Target: https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=${tab.sheetId}`);
     if (count.pending) console.error('Pending append outcomes need review. Keep identity notes intact; rerun reconciles rows already present.');
     if (count.failed || count.pending) process.exitCode = 1;
     return count;

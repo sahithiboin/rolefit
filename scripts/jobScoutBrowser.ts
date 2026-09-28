@@ -2,9 +2,10 @@ import type { Page, Browser } from 'playwright';
 import { LOCATIONS, ROLES, canonicalUrl, excludedCompany, recent, type Job, type Source } from './jobScoutCore.js';
 
 export const MAC_CHROME_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36';
-export async function createScoutContext(browser: Browser) {
+export async function createScoutContext(browser: Browser, options: { storageState?: string } = {}) {
   const context = await browser.newContext({
     locale: 'en-US', userAgent: MAC_CHROME_USER_AGENT,
+    ...(options.storageState ? { storageState: options.storageState } : {}),
     extraHTTPHeaders: {
       'Accept-Language': 'en-US,en;q=0.9',
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -84,10 +85,10 @@ export const EXTRACT_PAGE = String.raw`(() => {
 })()`;
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-export function searches(pages: number): Search[] {
+export function searches(pages: number, roles = ROLES, locations = LOCATIONS): Search[] {
   const plan: Search[] = [];
   // Round-robin sources/locations so a bounded run does not visit only one board.
-  for (const role of ROLES) for (const location of LOCATIONS) for (let page = 0; page < pages; page++) {
+  for (const role of roles) for (const location of locations) for (let page = 0; page < pages; page++) {
     const country = location.includes('Canada') ? 'Canada' : location.startsWith('Remote') ? 'India' : 'Hyderabad, India';
     const params = new URLSearchParams({ keywords: role, location: country, f_TPR: 'r86400', start: String(page * 25) });
     if (location.startsWith('Remote')) params.set('f_WT', '2');
@@ -99,7 +100,8 @@ export function searches(pages: number): Search[] {
     const indeedParams = new URLSearchParams({ q: role, l: location, fromage: '30', start: String(page * 10) });
     plan.push({ source: 'indeed', url: `https://${location.includes('Canada') ? 'ca' : 'in'}.indeed.com/jobs?${indeedParams}` });
     const glassdoorParams = new URLSearchParams({ keyword: role, location, fromAge: '30', p: String(page + 1) });
-    plan.push({ source: 'glassdoor', url: `https://www.glassdoor.com/Job/jobs.htm?${glassdoorParams}` });
+    const glassdoorHost = location.includes('Canada') ? 'www.glassdoor.ca' : 'www.glassdoor.co.in';
+    plan.push({ source: 'glassdoor', url: `https://${glassdoorHost}/Job/jobs.htm?${glassdoorParams}` });
   }
   const hiring = '("hiring Program Manager" OR "hiring TPM" OR "hiring Technical Product Manager" OR "looking for Technical Project Manager") AND ("Canada" OR "Hyderabad" OR "Remote")';
   // Public LinkedIn content search can require login; Bing discovers public post URLs too.
@@ -131,7 +133,7 @@ export async function readPage(page: Page, url: string, delayMs: number): Promis
   await page.waitForTimeout(1500); // Public boards render cards after the initial HTML.
   const data = await page.evaluate(EXTRACT_PAGE) as PageData;
   if (/authwall|checkpoint|\/login|\/signin/.test(page.url()) ||
-      /just a moment|access denied|security verification|verify you are human|captcha|sign in to linkedin/i.test(data.title)) {
+      /just a moment|access denied|security verification|verify you are human|captcha|sign in to linkedin|unusual traffic from your computer network/i.test(data.title + '\n' + data.text)) {
     throw new SourceBlocked('Login or browser challenge');
   }
   return data;

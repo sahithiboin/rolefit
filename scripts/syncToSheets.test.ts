@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SHEETS_USER_ID, HEADERS, qualifying, sheetRow, fitReason, appendRequest, syncJobs, inspectSheet, ensureHeaders, type SavedJob, type SyncStore } from './syncToSheets.js';
+import { SHEETS_USER_ID, HEADERS, qualifying, sheetRow, fitReason, appendRequest, syncJobs, inspectSheet, inspectSheetTab, ensureSheetTab, ensureHeaders, type SavedJob, type SyncStore } from './syncToSheets.js';
 
 const job = (overrides = {}): SavedJob => ({ id: 'fixture-job', data: {
   userId: SHEETS_USER_ID, source: 'JobScout', status: 'Saved', title: 'TPM', company: 'Example',
@@ -104,6 +104,29 @@ test('existing headers and note IDs are read without overwriting the tab', async
   assert.equal(result.empty, false);
   api.spreadsheets.get = async () => ({ data: { sheets: [{ properties: { sheetId: 0, title: 'Jobs' }, data: [{ rowData: [{ values: [{ userEnteredValue: { stringValue: 'Unrelated existing sheet' } }] }] }] }] } } as any);
   await assert.rejects(inspectSheet(api as any, 'sheet', 0, 'prefix:'), /headers differ/);
+});
+
+test('named user tabs can be discovered or created before header writes', async () => {
+  const calls: any[] = [];
+  const api = { spreadsheets: {
+    get: async (request: any) => request.ranges
+      ? { data: { sheets: [{ data: [{ rowData: [] }] }] } }
+      : { data: { sheets: [{ properties: { sheetId: 11, title: 'Sahithi' } }] } },
+    batchUpdate: async (request: any) => {
+      calls.push(request);
+      return { data: { replies: [{ addSheet: { properties: { sheetId: 22, title: request.requestBody.requests[0].addSheet.properties.title } } }] } };
+    },
+  } };
+  const sahithi = await inspectSheetTab(api as any, 'sheet', 'Sahithi', 'prefix:');
+  assert.equal(sahithi.sheetId, 11);
+  assert.equal(sahithi.title, 'Sahithi');
+  const missing = await ensureSheetTab(api as any, 'sheet', 'Sushmita', 'prefix:', false);
+  assert.equal(missing.missing, true);
+  assert.equal(calls.length, 0);
+  const created = await ensureSheetTab(api as any, 'sheet', 'Sushmita', 'prefix:', true);
+  assert.equal(created.sheetId, 22);
+  assert.equal(created.title, 'Sushmita');
+  assert.equal(calls[0].requestBody.requests[0].addSheet.properties.title, 'Sushmita');
 });
 
 

@@ -38,5 +38,6 @@ backend/test_tone.py
 
 # Local Job Scout receipts and reports
 .job-scout/
+.auth/
 
 backend/gen-lang-client-0247915711-b44a1a8beafb.json
