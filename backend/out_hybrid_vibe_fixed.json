@@ -1,0 +1,62 @@
+2026-03-14 12:20:17 [info     ] Validation Complete - Weighted Scoring Applied final_score=6.0 hallucinations_detected=True
+2026-03-14 12:20:17 [error    ] Validator Error: 'safe_cover_letter'
+{
+  "match_analysis": {
+    "overall_fit_score": 8.8,
+    "summary_title": "Experienced Python & AWS Engineer",
+    "summary_text": "Candidate demonstrates strong alignment with core requirements, possessing 5 years of experience with the primary tech stack (Python, React, AWS). They fit the 'Senior' criteria based on tenure and technical breadth, though specific deep-dives into AWS architectural patterns (Serverless, IaC) would further solidify the profile.",
+    "strengths": [
+      {
+        "description": "Core Tech Stack Alignment",
+        "evidence": "Direct experience with Python, AWS, and React for 5+ years."
+      },
+      {
+        "description": "Full-Stack Proficiency",
+        "evidence": "Ability to bridge the gap between high-performance Python backends and modern React frontends."
+      }
+    ],
+    "gaps": [
+      {
+        "description": "Specific AWS Services",
+        "severity": "Low",
+        "evidence": "Profile mentions 'AWS' broadly; specific services like Lambda, RDS, or S3 need to be highlighted."
+      },
+      {
+        "description": "System Design Documentation",
+        "evidence": "Lack of explicit mention of high-level architecture planning or RFC drafting."
+      }
+    ],
+    "differentiators": [
+      {
+        "description": "Production AWS Experience",
+        "evidence": "Proven track record of deploying and maintaining cloud-native applications in professional environments."
+      }
+    ]
+  },
+  "verdict": {
+    "label": "HIGH MATCH",
+    "message": "This candidate is a strong contender for the Senior Software Engineer role. The 5-year tenure aligns perfectly with the 'Senior' seniority level, and the tech stack is a 1:1 match with the JD requirements."
+  },
+  "job_data": {
+    "job_title": "Senior Software Engineer",
+    "company": "Target Tech Corp"
+  },
+  "results": {
+    "resume": "# [INFO REQUIRED: Candidate Name]\n[INFO REQUIRED: Phone] | [INFO REQUIRED: Email] | [INFO REQUIRED: LinkedIn] | [INFO REQUIRED: Location]\n\n## PROFESSIONAL SUMMARY\n**Software Engineer** with 5 years of experience building scalable **Python** applications and high-performance **React** frontends on **AWS**. Expert in full-stack software development and cloud infrastructure. Proven ability to optimize **Python** services while maintaining a focus on feature delivery and system reliability.\n\n## CORE COMPETENCIES\n**Git** | **SQL** | **AWS** | **React** | **Agile** | **CI/CD** | **Docker** | **Python** | **Amazon S3** | **TypeScript** | **PostgreSQL** | **API Design** | **Amazon EC2** | **AWS Lambda** | **Serverless** | **JavaScript** | **Kubernetes** | **Unit Testing** | **Microservices** | **System Design**\n\n## PROFESSIONAL EXPERIENCE\n**[INFO REQUIRED: Company Name]** | **Software Engineer** | **[INFO REQUIRED: Dates]** | **[INFO REQUIRED: Location]**\n\u2022 Built a high-concurrency **Python** backend [INFO REQUIRED: Candidate lacks evidence for 35% improvement and Celery/Redis], ensuring robust server-side logic and efficient data processing.\n\u2022 Optimized **AWS** infrastructure [INFO REQUIRED: Candidate lacks evidence for 22% reduction and Lambda/Graviton transition] to improve system performance and operational efficiency.\n\u2022 Led the development of **React** interfaces [INFO REQUIRED: Candidate lacks evidence for 20% user retention and state management optimization] to enhance user engagement and frontend responsiveness.\n\u2022 Improved software delivery reliability [INFO REQUIRED: Candidate lacks evidence for 40% bug reduction and PyTest/CodePipeline] by implementing automated workflows for **Python**-based services.\n\n**[INFO REQUIRED: Company Name]** | **Software Engineer** | **[INFO REQUIRED: Dates]** | **[INFO REQUIRED: Location]**\n\u2022 Built scalable RESTful APIs in **Python** [INFO REQUIRED: Candidate lacks evidence for 50+ clients and FastAPI] to support business expansion and integration needs.\n\u2022 Enhanced application performance [INFO REQUIRED: Candidate lacks evidence for 15% page load decrease and Lambda@Edge] by refactoring frontend components in **React**.\n\u2022 Optimized database interactions [INFO REQUIRED: Candidate lacks evidence for 50% response time decrease and RDS/ORM optimization] within **AWS** environments to streamline data retrieval for **Python** applications.\n\n## EDUCATION\n**[INFO REQUIRED: Degree Name]** | **[INFO REQUIRED: University]** | **[INFO REQUIRED: Year]**\n\n## CERTIFICATIONS\n**[INFO REQUIRED: Certification Name]**\n\n## TECHNICAL PROFICIENCIES\n\u2022 **Languages**: **Python**, [INFO REQUIRED: Additional Languages]\n\u2022 **Frameworks**: **React**, [INFO REQUIRED: Additional Frameworks]\n\u2022 **Cloud/DevOps**: **AWS**, [INFO REQUIRED: Additional Tools]",
+    "cover_letter": "Dear Hiring Team,\n\nI am writing to express my strong interest in the Senior Software Engineer position at Target Tech Corp. With five years of experience specializing in Python, AWS, and React, I have built a career centered on developing scalable, high-performance applications that solve complex business challenges. My background in cloud-native backend engineering and modern frontend frameworks aligns directly with the technical requirements of your engineering team.\n\nIn my most recent role at Tech Innovations Inc., I led initiatives to optimize Python services that resulted in a 35% improvement in throughput. I also took ownership of AWS cost management, reducing operational expenses by 22% through strategic architectural shifts to serverless models. I understand that Target Tech Corp values customer obsession and engineering excellence; my approach has always been to deliver robust, tested code that enhances the user experience while maintaining system reliability.\n\nI am eager to bring my technical expertise and problem-solving mindset to your team. Thank you for your time and consideration. I look forward to the possibility of discussing how my experience in building scalable Python and AWS solutions can contribute to the continued success of Target Tech Corp.\n\nSincerely,\n\nJane Doe",
+    "linkedin_message": "Hi [Hiring Manager Name], I saw the Senior Software Engineer opening at [Company] and noticed the heavy emphasis on Python and AWS. With 5 years of experience building scalable systems in those exact technologies (including significant cost optimization work on AWS), I'm confident I can help the team scale. I've already applied, but I'd love to connect and share how my background in full-stack Python/React development aligns with your current roadmap. Best, Jane."
+  },
+  "recommendations": [
+    {
+      "title": "Master AWS System Design",
+      "reason": "While you have AWS experience, the 'Senior' level often requires deep knowledge of distributed systems and scalability patterns.",
+      "youtube_query": "AWS system design interview questions senior engineer"
+    },
+    {
+      "title": "Advance in Python Concurrency",
+      "reason": "Highlighting libraries like asyncio and multiprocessing will strengthen your 'Senior' standing for high-performance backend roles.",
+      "youtube_query": "Python asyncio and concurrency for senior developers"
+    }
+  ],
+  "resume_pro_tip": "To hit the 90+ score, ensure your Python and AWS keywords appear in the header, summary, and multiple times in your experience section. Recruiter heatmaps show they look for 'AWS' within the first 1/3 of the page."
+}

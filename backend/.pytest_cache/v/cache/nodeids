@@ -1,0 +1,9 @@
+[
+  "tests/test_audit_hallucination.py::TestAuditHallucination::test_extreme_mismatch[mismatch_001]",
+  "tests/test_audit_hallucination.py::TestAuditHallucination::test_extreme_mismatch[mismatch_002]",
+  "tests/test_audit_hallucination.py::TestAuditHallucination::test_metric_fabrication[metric_001]",
+  "tests/test_audit_hallucination.py::TestAuditHallucination::test_metric_fabrication[metric_002]",
+  "tests/test_audit_reputation.py::TestAuditReputation::test_narrative_drift_consistency[drift_001]",
+  "tests/test_audit_speed.py::TestAuditSpeed::test_baseline_speed_large_resume",
+  "tests/test_audit_speed.py::TestAuditSpeed::test_concurrent_load_simulator"
+]

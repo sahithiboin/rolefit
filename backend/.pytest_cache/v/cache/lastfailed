@@ -1,0 +1,6 @@
+{
+  "tests/test_audit_hallucination.py::TestAuditHallucination::test_extreme_mismatch[mismatch_001]": true,
+  "tests/test_audit_hallucination.py::TestAuditHallucination::test_extreme_mismatch[mismatch_002]": true,
+  "tests/test_audit_reputation.py::TestAuditReputation::test_narrative_drift_consistency[drift_001]": true,
+  "tests/test_audit_hallucination.py::TestAuditHallucination::test_metric_fabrication[metric_002]": true
+}

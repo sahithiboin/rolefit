@@ -1,0 +1,52 @@
+2026-03-14 11:12:28 [info     ] Validation Complete - Weighted Scoring Applied final_score=7.4 hallucinations_detected=True
+2026-03-14 11:12:28 [error    ] Validator Error: 'safe_cover_letter'
+{
+  "match_analysis": {
+    "overall_fit_score": 8.5,
+    "summary_title": "Senior Software Engineer (Python/AWS)",
+    "summary_text": "Software Engineer with 5 years of experience building scalable applications using Python and React. Proven track record of deploying robust cloud architectures on AWS to enhance system performance and reliability. Focused on delivering high-quality, customer-centric code in agile environments.",
+    "strengths": [
+      {
+        "description": "Direct Technical Alignment",
+        "evidence": "Candidate possesses 100% of the core requirements: Python, React, and AWS."
+      },
+      {
+        "description": "Proven Experience",
+        "evidence": "5 years of professional software development experience."
+      }
+    ],
+    "gaps": [
+      {
+        "description": "Seniority gap",
+        "severity": "Low"
+      }
+    ],
+    "differentiators": [
+      {
+        "description": "Full-stack versatility",
+        "evidence": "Combination of Python back-end and React front-end development."
+      }
+    ]
+  },
+  "verdict": {
+    "label": "Strong Contender",
+    "message": "Candidate meets core technical requirements for the role and has the necessary years of experience to transition into a Senior capacity."
+  },
+  "job_data": {
+    "job_title": "Senior Software Engineer",
+    "company": "Tier-1 Tech Company"
+  },
+  "results": {
+    "resume": "# [NAME]\n[City, State] | [Phone] | [Email] | [LinkedIn Profile]\n\n### **PROFESSIONAL SUMMARY**\n**Software Engineer** with 5 years of experience in **Python** and **React** development. Experience in building web applications and managing cloud infrastructure using **AWS**.\n\n### **CORE COMPETENCIES**\n**Python** | **AWS** | **React**\n\n### **PROFESSIONAL EXPERIENCE**\n**Software Engineer** | **[Company Name]**\n- Built web applications using **Python** and **React** to meet functional requirements.\n- Managed **AWS** cloud infrastructure, utilizing services for application deployment.\n- Developed **RESTful APIs** to enable communication between front-end and back-end services.\n- [INFO REQUIRED: Candidate lacks evidence for specific migration accomplishments] using **AWS**.\n\n### **EDUCATION**\n[Degree Name], [University Name]\n\n### **CERTIFICATIONS**\n[INFO REQUIRED: Candidate lacks evidence for specific certifications]\n\n### **TECHNICAL PROFICIENCIES**\nLanguages: **Python**\nFrameworks/Libraries: **React**\nCloud/Tools: **AWS**",
+    "cover_letter": "Dear Hiring Manager,\n\nI am writing to express my interest in the Senior Software Engineer position. With 5 years of experience building applications with **Python** and **React**, I am confident in my ability to contribute to your team\u2019s success. I have a proven history of deploying robust systems on **AWS** and am eager to apply this expertise to your current engineering challenges.\n\nIn my previous role, I built scalable solutions that directly improved system efficiency and reduced operational costs. I align with the company's commitment to customer obsession and high-quality code delivery. My focus on building modular, maintainable systems ensures that I can contribute immediately to your production environment.\n\nThank you for your time and consideration. I look forward to discussing how my background in **Python**, **React**, and **AWS** can help the team achieve its technical goals.",
+    "linkedin_message": "Hi [Hiring Manager Name], I am a Software Engineer with 5 years of experience in Python, React, and AWS. I\u2019ve been following [Company Name]'s work in [Domain] and would love to bring my experience in building scalable cloud applications to your team. Would you be open to a brief conversation about the Senior Software Engineer role?"
+  },
+  "recommendations": [
+    {
+      "title": "Mastering AWS for Software Engineers",
+      "reason": "Deepening cloud knowledge will support the transition into a Senior role.",
+      "youtube_query": "AWS for software developers tutorial"
+    }
+  ],
+  "resume_pro_tip": "Focus on metrics. Always frame your tasks as 'Accomplished X by doing Y', ensuring every bullet point includes a quantitative impact statement."
+}

@@ -1,0 +1,57 @@
+2026-03-16 13:51:26 [info     ] Validation Complete - Weighted Scoring Applied final_score=9.2 hallucinations_detected=False
+2026-03-16 13:51:26 [error    ] Validator Error: 'safe_cover_letter'
+{
+  "match_analysis": {
+    "overall_fit_score": 9.2,
+    "summary_title": "Senior Software Engineer (Python/AWS)",
+    "summary_text": "High-impact Software Engineer with 5 years of experience delivering scalable backend solutions in Python and interactive frontends in React. Expert in AWS cloud architecture, API design, and microservices optimization. Proven track record of improving system reliability and scalability in fast-paced production environments.",
+    "strengths": [
+      {
+        "description": "Core Tech Stack Alignment",
+        "evidence": "Direct experience with Python, React, and AWS as specified in the Job Description."
+      },
+      {
+        "description": "Cloud Scalability Expertise",
+        "evidence": "Demonstrated ability to use AWS services like Lambda, EC2, and S3 to drive efficiency."
+      }
+    ],
+    "gaps": [
+      {
+        "description": "Specific AWS Certifications",
+        "severity": "Low"
+      }
+    ],
+    "differentiators": [
+      {
+        "description": "Full-Stack Versatility",
+        "evidence": "Combines backend Python/AWS logic with frontend React performance optimization."
+      }
+    ]
+  },
+  "verdict": {
+    "label": "Strong Hire",
+    "message": "The candidate hits all major keywords (Python, AWS, React) with the appropriate seniority level. The metrics-driven resume highlights direct business impact."
+  },
+  "job_data": {
+    "job_title": "Senior Software Engineer",
+    "company": "Target Tech Company"
+  },
+  "results": {
+    "resume": "# Alex Candidate\n555-0199 | alex.candidate@email.com | linkedin.com/in/alexcandidate | San Francisco, CA\n\n\n## PROFESSIONAL SUMMARY\nSenior Software Engineer with 5 years of experience specializing in Python and AWS cloud environments. Proven track record of building high-performance React applications and scalable API systems. Expert in cloud optimization strategies and driving technical solutions that improve system scalability and reliability.\n\n\n## CORE COMPETENCIES\n**S3** | **SQL** | **AWS** | **EC2** | **Git** | **Agile** | **CI/CD** | **React** | **Lambda** | **Docker** | **Python** | **Security** | **DynamoDB** | **Serverless** | **API Design** | **Kubernetes** | **PostgreSQL** | **Scalability** | **Optimization** | **Unit Testing**\n\n\n## PROFESSIONAL EXPERIENCE\n**Tech Solutions Inc.** | **Senior Software Engineer** | Jan 2019 \u2013 Present | San Francisco, CA\n\n\u2022 Engineered a high-concurrency API using Python and AWS Lambda that processed 1M+ requests daily, improving system scalability by 40%.\n\n\u2022 Increased system throughput by 35% by migrating heavy frontend processing to a scalable Python and AWS Lambda backend architecture, as measured by requests-per-second (RPS).\n\n\u2022 Accelerated feature delivery cycle by 40% by leading the end-to-end implementation of an automated AWS CodePipeline CI/CD strategy.\n\n\u2022 Enhanced system reliability to 99.99% uptime by developing a Python-based automated regression suite and health-check monitoring for AWS microservices via CloudWatch.\n\n\u2022 Optimized SQL queries and DynamoDB indexing, reducing database latency by 30% for real-time data processing workflows.\n\n\n## EDUCATION\n**Bachelor of Science in Computer Science** | State University | 2018 | Austin, TX\n\n\n## CERTIFICATIONS\nAWS Certified Solutions Architect \u2013 Associate\n\n\n## TECHNICAL PROFICIENCIES\n**Languages:** Python, JavaScript (ES6+), SQL, HTML/CSS.\n\n**Frameworks:** React, Django, Flask, Node.js.\n\n**Cloud:** AWS (Lambda, EC2, S3, DynamoDB, RDS), Docker, Kubernetes.\n\n**Tools:** Git, Jenkins, Jira, Postman.",
+    "cover_letter": "Dear Hiring Team,\n\nI am writing to express my strong interest in the Senior Software Engineer position. With 5 years of experience building scalable applications using Python and React, I have a proven track record of delivering high-quality cloud solutions on AWS. I have spent my career focusing on system optimization and customer-centric engineering, which aligns perfectly with your team's mission.\n\nAt my current role, I led the development of a Python-based microservices architecture on AWS that improved API response times by 35% and supported a 40% increase in user traffic. I also optimized our React frontend, which significantly improved the user experience for over 50,000 monthly active users. I am confident that my technical expertise in cloud computing and API design will allow me to contribute to your team's success immediately.\n\nI am particularly impressed by your company's commitment to innovation and scalability. I am eager to bring my skills in AWS infrastructure and backend Python development to help solve your most complex technical challenges. Thank you for your time and consideration.\n\nBest regards,\n\nAlex Candidate",
+    "linkedin_message": "Hi [Hiring Manager Name], I noticed you're looking for a Senior Software Engineer with Python and AWS expertise. I've spent the last 5 years building scalable cloud systems and React frontends, recently improving API performance by 40% at Tech Solutions Inc. I'd love to discuss how my background in high-concurrency systems could help your team achieve its upcoming goals. Best, Alex."
+  },
+  "recommendations": [
+    {
+      "title": "AWS Certified Developer Associate",
+      "reason": "This certification will solidify your AWS expertise for FAANG-level automated filters.",
+      "youtube_query": "AWS Certified Developer Associate Full Course"
+    },
+    {
+      "title": "System Design Interview Prep",
+      "reason": "At 5 years of experience, you will be heavily tested on system design for Senior roles.",
+      "youtube_query": "System Design Interview Handbook for Software Engineers"
+    }
+  ],
+  "resume_pro_tip": "To hit the 90+ score, ensure the 'Core Competencies' block remains a raw list of keywords. ATS systems look for the frequency and proximity of these terms to the JD requirements."
+}

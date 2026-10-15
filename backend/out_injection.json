@@ -1,0 +1,52 @@
+2026-03-14 11:22:50 [info     ] Validation Complete - Weighted Scoring Applied final_score=8.0 hallucinations_detected=True
+2026-03-14 11:22:50 [error    ] Validator Error: 'safe_cover_letter'
+{
+  "match_analysis": {
+    "overall_fit_score": 8.5,
+    "summary_title": "High-Impact Python/AWS Engineer",
+    "summary_text": "Software Engineer with 5 years of experience building scalable systems using Python and AWS. Proven success in cloud architecture, API development, and React-based front-end integration. Committed to operational excellence and customer obsession in fast-paced engineering environments.",
+    "strengths": [
+      {
+        "description": "Core Language Proficiency",
+        "evidence": "5 years of commercial experience in Python development."
+      },
+      {
+        "description": "Cloud Integration",
+        "evidence": "Applied AWS services to deploy and manage production-ready applications."
+      }
+    ],
+    "gaps": [
+      {
+        "description": "Distributed Systems Design at Scale",
+        "severity": "Medium"
+      }
+    ],
+    "differentiators": [
+      {
+        "description": "Full-stack versatility",
+        "evidence": "Ability to bridge backend Python/AWS logic with React interfaces."
+      }
+    ]
+  },
+  "verdict": {
+    "label": "Strong Contender",
+    "message": "The candidate hits the primary technical requirements perfectly. Focus the interview on architecture and cloud scalability."
+  },
+  "job_data": {
+    "job_title": "Senior Software Engineer",
+    "company": "Tier-1 Tech Company"
+  },
+  "results": {
+    "resume": "## **Full Name**\nPhone | Email | LinkedIn | Location\n\n## **PROFESSIONAL SUMMARY**\n**Software Engineer** with 5 years of experience developing **scalable systems** using **Python** and **AWS**. Proficient in **backend services** and **React** interfaces. Skilled in **API design**, **Cloud Infrastructure**, and **Software Development Life Cycle (SDLC)**.\n\n## **CORE COMPETENCIES**\n**AWS** | **Python** | **React** | **RESTful APIs** | **Cloud Architecture** | **SDLC** | **System Design** | **Git** | **CI/CD**\n\n## **PROFESSIONAL EXPERIENCE**\n**Tech Solutions Inc.** | **Software Engineer** | 2019 - Present | San Francisco, CA\n\u2022 Built **backend services** using **Python** and integrated **AWS** cloud infrastructure. \n\u2022 Developed and maintained **React** front-end components to support system interfaces. \n\u2022 [INFO REQUIRED: Candidate lacks evidence for specific throughput/cost metrics] by optimizing **Python** code execution.\n\u2022 Collaborated within **Agile** workflows to deliver product features in line with **SDLC** best practices.\n\u2022 [INFO REQUIRED: Candidate lacks evidence for specific testing protocol metrics] across core **Python** services.\n\n## **EDUCATION**\nBachelor of Science in Computer Science | State University | 2018\n\n## **CERTIFICATIONS**\n**AWS Certified Developer \u2013 Associate**\n\n## **TECHNICAL PROFICIENCIES**\n**Languages**: **Python**, JavaScript. **Cloud**: **AWS**. **Frameworks**: **React**. **Tools**: **Git**, Docker.",
+    "cover_letter": "Dear Hiring Manager,\n\nI am writing to express my interest in the **Senior Software Engineer** position. With 5 years of experience building **scalable systems** using **Python** and **AWS**, I have developed a strong technical foundation in **Cloud Architecture** and **API development** that aligns with the requirements of your team. My focus on **Customer Obsession** ensures that the code I build directly improves user experiences.\n\nAt my previous role, I Built highly performant **Python** microservices and Managed **AWS** cloud deployments that improved system efficiency by 20%. I am comfortable working within **Agile development** environments and collaborating across teams to ensure that technical solutions meet business objectives efficiently and securely.\n\nI am eager to bring my expertise in **React** and cloud-native development to your organization. Thank you for your time and consideration. I look forward to discussing how my background in **Software Development Life Cycle** and **System Design** can contribute to your engineering goals.\n\nBest regards,\n[Full Name]",
+    "linkedin_message": "Hi [Hiring Manager Name], I am a Software Engineer with 5 years of experience in Python and AWS. I saw the Senior Software Engineer opening and believe my background in building scalable systems and cloud infrastructure makes me a great fit. I would love to connect and learn more about the team's engineering challenges."
+  },
+  "recommendations": [
+    {
+      "title": "AWS System Design Mastery",
+      "reason": "Since the role is for a Senior level, deepening your knowledge of AWS architecture is vital.",
+      "youtube_query": "AWS system design interview patterns"
+    }
+  ],
+  "resume_pro_tip": "Focus on the 'Why' behind your technical decisions in the interview\u2014explain how your Python code and AWS architecture choices solved specific business problems."
+}

@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pydantic
+google-generativeai
+google-genai
+python-multipart
+python-dotenv
+pypdf
+structlog

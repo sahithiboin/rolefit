@@ -1,0 +1,118 @@
+[
+    {
+        "id": "perfect_match",
+        "description": "Senior Python Developer applying for a Senior Backend Engineer role. Expected: High Match Score (> 8).",
+        "user_profile": {
+            "full_name": "Jordan Smith",
+            "email": "jordan.smith@example.com",
+            "linkedin_url": "linkedin.com/in/jordansmithdev",
+            "skills": [
+                "Python",
+                "Django",
+                "PostgreSQL",
+                "AWS",
+                "Docker",
+                "Kubernetes",
+                "Redis",
+                "Celery"
+            ],
+            "experience": [
+                {
+                    "title": "Senior Backend Engineer",
+                    "company": "TechFlow Solutions",
+                    "duration": "2020 - Present",
+                    "description": "Lead a team of 5 developers. Architected a microservices-based backend using Python and Django. Reduced API latency by 40%."
+                },
+                {
+                    "title": "Backend Developer",
+                    "company": "StartUp Inc",
+                    "duration": "2017 - 2020",
+                    "description": "Developed RESTful APIs using Flask. Managed database migrations and optimized SQL queries."
+                }
+            ],
+            "education": [
+                {
+                    "degree": "B.S. Computer Science",
+                    "school": "University of Tech",
+                    "year": "2017"
+                }
+            ],
+            "total_years_experience": 7
+        },
+        "job_description_text": "We are looking for a Senior Backend Engineer to join our core infrastructure team. You will be responsible for building scalable APIs and managing our cloud infrastructure. \n\nRequirements:\n- 5+ years of experience with Python (Django or Flask).\n- Strong knowledge of SQL and database optimization.\n- Experience with AWS (EC2, S3, RDS).\n- Familiarity with containerization (Docker, Kubernetes).\n- Leadership experience is a plus."
+    },
+    {
+        "id": "career_pivot",
+        "description": "Marketing Manager applying for a Product Owner role. Expected: Medium Match Score (5-8), highlighting transferrable skills.",
+        "user_profile": {
+            "full_name": "Alex Morgan",
+            "email": "alex.morgan@example.com",
+            "linkedin_url": "linkedin.com/in/alexmorganmkt",
+            "skills": [
+                "Digital Marketing",
+                "SEO",
+                "Google Analytics",
+                "Project Management",
+                "Stakeholder Communication",
+                "User Research",
+                "Agile"
+            ],
+            "experience": [
+                {
+                    "title": "Marketing Manager",
+                    "company": "Creative Agency",
+                    "duration": "2019 - Present",
+                    "description": "Managed marketing campaigns for 10+ clients. Conducted user research to optimize ad spend. Collaborated with product teams to align messaging."
+                },
+                {
+                    "title": "Content Strategist",
+                    "company": "Media Corp",
+                    "duration": "2016 - 2019",
+                    "description": "Created content strategies increasing site traffic by 150%. managed a team of freelance writers."
+                }
+            ],
+            "education": [
+                {
+                    "degree": "B.A. Communications",
+                    "school": "State University",
+                    "year": "2016"
+                }
+            ],
+            "total_years_experience": 8
+        },
+        "job_description_text": "We are hiring a Product Owner to lead our user engagement squad. \n\nResponsibilities:\n- Define product roadmap and prioritize backlog.\n- Work closely with engineering and design teams.\n- Analyze user data to make informed decisions.\n\nRequirements:\n- Experience in Agile/Scrum environments.\n- Strong analytical and communication skills.\n- Background in marketing or user research is highly desirable.\n- Ability to bridge the gap between business and technical teams."
+    },
+    {
+        "id": "mismatch",
+        "description": "Junior Graphic Designer applying for a VP of Engineering role. Expected: Low Match Score (< 5).",
+        "user_profile": {
+            "full_name": "Sam Lee",
+            "email": "sam.lee@example.com",
+            "linkedin_url": "linkedin.com/in/samleedesign",
+            "skills": [
+                "Adobe Photoshop",
+                "Illustrator",
+                "Figma",
+                "Typography",
+                "Branding"
+            ],
+            "experience": [
+                {
+                    "title": "Junior Graphic Designer",
+                    "company": "Design Studio",
+                    "duration": "2023 - Present",
+                    "description": "Assist in creating social media graphics and brand assets. Collaborated with senior designers on logo projects."
+                }
+            ],
+            "education": [
+                {
+                    "degree": "B.A. Graphic Design",
+                    "school": "Art Institute",
+                    "year": "2023"
+                }
+            ],
+            "total_years_experience": 1
+        },
+        "job_description_text": "We are seeking a VP of Engineering to lead our 50-person engineering organization. \n\nResponsibilities:\n- Set technical strategy and vision.\n- Manage engineering directors and managers.\n- Oversee architecture and technology choices.\n\nRequirements:\n- 15+ years of software engineering experience.\n- 5+ years of executive leadership experience.\n- Proven track record of scaling high-availability systems.\n- Master's degree in Computer Science preferred."
+    }
+]

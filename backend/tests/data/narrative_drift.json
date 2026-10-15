@@ -1,0 +1,42 @@
+[
+    {
+        "id": "drift_001",
+        "type": "seniority_appropriate_tone",
+        "description": "Entry-level applying for Mid-level",
+        "resume": {
+            "name": "Casey Green",
+            "email": "casey@example.com",
+            "summary": "Recent graduate with internship experience.",
+            "experience": [
+                {
+                    "title": "Marketing Intern",
+                    "company": "Agency Y",
+                    "dates": "Summer 2024",
+                    "description": "Assisted with campaign research."
+                }
+            ],
+            "education": [
+                {
+                    "degree": "BS Marketing",
+                    "school": "State U",
+                    "year": "2024"
+                }
+            ],
+            "skills": [
+                "Market Research",
+                "Excel"
+            ]
+        },
+        "job_posting": {
+            "job_title": "Marketing Manager",
+            "company": "BigBrand",
+            "text": "Requires 3-5 years experience driving strategy."
+        },
+        "expected_tone": "humble_aspirational",
+        "forbidden_tones": [
+            "expert",
+            "peer_to_peer",
+            "seasoned_veteran"
+        ]
+    }
+]
