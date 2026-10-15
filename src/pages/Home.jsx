@@ -90,6 +90,22 @@ export default function Home() {
                             </Button>
                         </div>
                     )}
+                    <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
+                        <a
+                            href="https://www.producthunt.com/products/rolefit?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-rolefit"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ maxWidth: '100%' }}
+                        >
+                            <img
+                                alt="RoleFit - Tailor every job application without starting from scratch | Product Hunt"
+                                width="250"
+                                height="54"
+                                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1279777&amp;theme=light&amp;t=1792048941608"
+                                style={{ display: 'block', maxWidth: '100%', height: 'auto' }}
+                            />
+                        </a>
+                    </div>
                 </motion.div>
             </div>
 
